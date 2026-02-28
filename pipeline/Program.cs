@@ -12,7 +12,19 @@ var outputDirectory = Environment.GetEnvironmentVariable("POSTS_OUTPUT_DIR")
 var bedsDirectory = Environment.GetEnvironmentVariable("BEDS_CONFIG_DIR")
     ?? "./garden/beds";
 
+var dataDirectory = Environment.GetEnvironmentVariable("DATA_LOG_DIR")
+    ?? "./garden/data";
+
 // ─── Pipeline ─────────────────────────────────────────────────────────────────
+var useMockSensors = Environment.GetEnvironmentVariable("USE_MOCK_SENSORS") == "true";
+
+if (!useMockSensors)
+{
+    Console.WriteLine("ℹ️  USE_MOCK_SENSORS is not set and no real sensor provider is configured yet.");
+    Console.WriteLine("   Pipeline skipped — waiting for hardware.");
+    return 0;
+}
+
 Console.WriteLine("🌱 Garden AI Pipeline starting...\n");
 
 // Step 1: Load bed config, sensor data, and weather forecast in parallel
@@ -41,7 +53,12 @@ Console.WriteLine($"   {currentReading.SoilChannel2.ChannelName}: {currentReadin
 Console.WriteLine($"   Forecast: {forecast.TotalRainNextDays(3):F1}mm rain in next 3 days" +
                   (forecast.IsFrostRisk ? ", ⚠️ frost risk" : "") + "\n");
 
-// Step 2: Build the generator list from whichever keys are present
+// Step 2: Save raw data snapshot
+Console.WriteLine("💾 Saving raw data snapshot...");
+await DataLogger.SaveAsync(currentReading, history, forecast, dataDirectory);
+Console.WriteLine();
+
+// Step 3: Build the generator list from whichever keys are present
 //   ► Add or remove entries here to change which models are compared
 var generators = new List<IInsightGenerator>();
 
@@ -97,7 +114,7 @@ if (succeeded == 0)
     return 1;
 }
 
-// Step 3: Publish comparison post
+// Step 4: Publish comparison post
 Console.WriteLine("📄 Publishing comparison post...");
 await BlogPostPublisher.SavePostAsync(currentReading, forecast, results, outputDirectory);
 
