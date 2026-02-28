@@ -1,8 +1,10 @@
 # .NET
 pipeline/bin/
 pipeline/obj/
-pipeline/output/
 pipeline/Properties/launchSettings.json
+
+# Local pipeline output (CI writes to site/src/content/posts instead)
+output/
 
 # Node / Astro
 site/node_modules/
