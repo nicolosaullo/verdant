@@ -11,13 +11,38 @@ public class AnthropicInsightGenerator(string apiKey, string model = "claude-opu
     public string ProviderName => "Anthropic";
     public string ModelName => model;
 
-    public async Task<GardenInsight> GenerateInsightAsync(SensorReading current, List<DailyHistory> history, WeatherForecast forecast)
+    public async Task<GardenInsight> GenerateInsightAsync(
+        SensorReading current,
+        List<DailyHistory> history,
+        WeatherForecast forecast,
+        List<GardenBed> beds)
     {
+        var prompt = GardenInsightParser.BuildPrompt(current, history, forecast, beds);
+        var image  = beds.FirstOrDefault(b => b.HasImage);
+
+        // Build message content — image block first if available
+        object content = image is not null
+            ? new object[]
+            {
+                new
+                {
+                    type   = "image",
+                    source = new
+                    {
+                        type       = "base64",
+                        media_type = image.ImageMediaType,
+                        data       = image.ImageData
+                    }
+                },
+                new { type = "text", text = prompt }
+            }
+            : (object)prompt;
+
         var requestBody = new
         {
             model,
             max_tokens = 1500,
-            messages = new[] { new { role = "user", content = GardenInsightParser.BuildPrompt(current, history, forecast) } }
+            messages   = new[] { new { role = "user", content } }
         };
 
         using var request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
@@ -28,7 +53,7 @@ public class AnthropicInsightGenerator(string apiKey, string model = "claude-opu
         var response = await _http.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
-        var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var doc  = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var text = doc.RootElement
             .GetProperty("content")[0]
             .GetProperty("text")

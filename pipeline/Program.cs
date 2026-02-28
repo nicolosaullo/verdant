@@ -9,18 +9,30 @@ var openAiApiKey    = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 var outputDirectory = Environment.GetEnvironmentVariable("POSTS_OUTPUT_DIR")
     ?? "./output/posts";
 
+var bedsDirectory = Environment.GetEnvironmentVariable("BEDS_CONFIG_DIR")
+    ?? "./garden/beds";
+
 // ─── Pipeline ─────────────────────────────────────────────────────────────────
 Console.WriteLine("🌱 Garden AI Pipeline starting...\n");
 
-// Step 1: Sensor data + weather forecast (fetched in parallel)
-Console.WriteLine("📡 Fetching sensor data (mock) and weather forecast...");
+// Step 1: Load bed config, sensor data, and weather forecast in parallel
+Console.WriteLine("📡 Loading bed config, sensor data, and weather forecast...");
+var bedsTask     = Task.Run(() => GardenBedLoader.LoadAll(bedsDirectory));
 var sensorTask   = Task.Run(() => (MockSensorProvider.GetCurrentReading(), MockSensorProvider.GetSevenDayHistory()));
 var forecastTask = WeatherForecastProvider.GetForecastAsync();
 
-await Task.WhenAll(sensorTask, forecastTask);
+await Task.WhenAll(bedsTask, sensorTask, forecastTask);
 
+var beds                      = bedsTask.Result;
 var (currentReading, history) = sensorTask.Result;
-var forecast = forecastTask.Result;
+var forecast                  = forecastTask.Result;
+
+if (beds.Count > 0)
+{
+    Console.WriteLine($"   Beds loaded: {string.Join(", ", beds.Select(b => $"{b.Name}" + (b.HasImage ? " 📷" : "")))}");
+}
+else
+    Console.WriteLine("   No bed config found — running without bed context.");
 
 Console.WriteLine($"   Outdoor temp:     {currentReading.Outdoor.TemperatureCelsius}°C");
 Console.WriteLine($"   Outdoor humidity: {currentReading.Outdoor.HumidityPercent}%");
@@ -64,7 +76,7 @@ var tasks = generators.Select(async g =>
 {
     try
     {
-        var insight = await g.GenerateInsightAsync(currentReading, history, forecast);
+        var insight = await g.GenerateInsightAsync(currentReading, history, forecast, beds);
         Console.WriteLine($"   ✅ {g.ProviderName}/{g.ModelName} done");
         return new ProviderInsight(g.ProviderName, g.ModelName, insight);
     }

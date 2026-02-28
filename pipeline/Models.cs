@@ -55,9 +55,32 @@ public record ProviderInsight(
     public bool Succeeded => Insight is not null;
 }
 
+/// <summary>
+/// Configuration and planting details for a physical garden bed,
+/// loaded from a Markdown file in garden/beds/.
+/// </summary>
+public record GardenBed(
+    List<int> Channels,        // sensor channels that monitor this bed
+    string Name,
+    string Location,
+    double? AreaSqm,
+    string Soil,
+    string Sun,
+    string Notes,              // markdown body: what's planted, care notes
+    string? ImageData,         // base64-encoded image, if present alongside the .md file
+    string? ImageMediaType     // e.g. "image/jpeg"
+)
+{
+    public bool HasImage => ImageData is not null;
+}
+
 public interface IInsightGenerator
 {
     string ProviderName { get; }
     string ModelName { get; }
-    Task<GardenInsight> GenerateInsightAsync(SensorReading current, List<DailyHistory> history, WeatherForecast forecast);
+    Task<GardenInsight> GenerateInsightAsync(
+        SensorReading current,
+        List<DailyHistory> history,
+        WeatherForecast forecast,
+        List<GardenBed> beds);
 }

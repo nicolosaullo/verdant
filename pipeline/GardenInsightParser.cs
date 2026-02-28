@@ -9,17 +9,21 @@ internal static class GardenInsightParser
     internal static string BuildPrompt(
         SensorReading current,
         List<DailyHistory> history,
-        WeatherForecast forecast)
+        WeatherForecast forecast,
+        List<GardenBed> beds)
     {
         var historyTable = string.Join("\n", history.Select(h =>
             $"  {h.Date:dd MMM}: Temp {h.TempMin}–{h.TempMax}°C (avg {h.TempAvg}°C), " +
             $"Humidity {h.HumidityAvg}%, " +
-            $"{current.SoilChannel1.ChannelName} soil {h.SoilCh1Avg}%, " +
-            $"{current.SoilChannel2.ChannelName} soil {h.SoilCh2Avg}%"
+            $"Soil ch1 {h.SoilCh1Avg}%, ch2 {h.SoilCh2Avg}%"
         ));
 
-        var rainNext3Days  = forecast.TotalRainNextDays(3);
-        var frostRiskNote  = forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "";
+        var rainNext3Days = forecast.TotalRainNextDays(3);
+        var frostRiskNote = forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "";
+
+        var bedsSection = beds.Count > 0
+            ? "## Garden Beds\n\n" + string.Join("\n\n", beds.Select(FormatBed))
+            : "";
 
         return $"""
             You are an expert gardening assistant with deep knowledge of vegetable growing
@@ -27,12 +31,14 @@ internal static class GardenInsightParser
             for a home food garden in Dunedin, New Zealand (45°S, oceanic climate,
             currently late summer / early autumn).
 
+            {bedsSection}
+
             ## Current Readings ({current.Timestamp:dd MMM yyyy, h:mm tt})
             - Outdoor temp: {current.Outdoor.TemperatureCelsius}°C
               (feels like {current.Outdoor.FeelsLikeCelsius}°C, dew point {current.Outdoor.DewPointCelsius}°C)
             - Outdoor humidity: {current.Outdoor.HumidityPercent}%
-            - Soil moisture — {current.SoilChannel1.ChannelName}: {current.SoilChannel1.MoisturePercent}%
-            - Soil moisture — {current.SoilChannel2.ChannelName}: {current.SoilChannel2.MoisturePercent}%
+            - Soil moisture — channel 1: {current.SoilChannel1.MoisturePercent}%
+            - Soil moisture — channel 2: {current.SoilChannel2.MoisturePercent}%
 
             ## 7-Day Sensor History
             {historyTable}
@@ -46,7 +52,8 @@ internal static class GardenInsightParser
 
             ### Summary
             A 2-3 sentence plain-English overview of today's garden conditions, written
-            in a warm, conversational tone suitable for a public blog post.
+            in a warm, conversational tone suitable for a public blog post. Reference
+            the specific plants by name.
 
             ### Observations
             3-5 bullet points of specific, data-driven observations about trends,
@@ -56,8 +63,7 @@ internal static class GardenInsightParser
             Concrete, prioritised actions the gardener should take today or in the
             next 24 hours. Factor in the weather forecast — if significant rain is
             coming soon, avoid watering. If a frost is forecast, recommend protection.
-            Be specific (e.g. "Hold off watering the tomato bed — 12mm of rain is
-            forecast tomorrow").
+            Tailor advice to the specific plants in the bed.
 
             ### Forecast Advice
             1-2 sentences on what to watch for over the next few days, using the
@@ -67,6 +73,23 @@ internal static class GardenInsightParser
             A short (1-2 sentence) reflective or encouraging note that acknowledges
             the journey of learning through data. Keep it human and grounded.
             """;
+    }
+
+    private static string FormatBed(GardenBed bed)
+    {
+        var lines = new System.Text.StringBuilder();
+        lines.AppendLine($"### {bed.Name}");
+        if (!string.IsNullOrEmpty(bed.Location))  lines.AppendLine($"- Location: {bed.Location}");
+        if (bed.AreaSqm.HasValue)                 lines.AppendLine($"- Area: {bed.AreaSqm}m²");
+        if (!string.IsNullOrEmpty(bed.Soil))      lines.AppendLine($"- Soil: {bed.Soil}");
+        if (!string.IsNullOrEmpty(bed.Sun))       lines.AppendLine($"- Sun: {bed.Sun}");
+        lines.AppendLine($"- Sensor channels: {string.Join(", ", bed.Channels)}");
+        if (!string.IsNullOrEmpty(bed.Notes))
+        {
+            lines.AppendLine();
+            lines.Append(bed.Notes);
+        }
+        return lines.ToString();
     }
 
     internal static GardenInsight ParseInsight(string rawText, SensorReading reading)
