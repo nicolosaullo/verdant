@@ -6,18 +6,8 @@ namespace GardenAI;
 /// </summary>
 internal static class GardenInsightParser
 {
-    internal static string BuildPrompt(
-        SensorReading current,
-        List<DailyHistory> history,
-        WeatherForecast forecast,
-        List<GardenBed> beds)
+    internal static string BuildPrompt(WeatherForecast forecast, List<GardenBed> beds)
     {
-        var historyTable = string.Join("\n", history.Select(h =>
-            $"  {h.Date:dd MMM}: Temp {h.TempMin}–{h.TempMax}°C (avg {h.TempAvg}°C), " +
-            $"Humidity {h.HumidityAvg}%, " +
-            $"Soil ch1 {h.SoilCh1Avg}%, ch2 {h.SoilCh2Avg}%"
-        ));
-
         var rainNext3Days = forecast.TotalRainNextDays(3);
         var frostRiskNote = forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "";
 
@@ -25,8 +15,8 @@ internal static class GardenInsightParser
             ? "## Garden Beds\n\n" + string.Join("\n\n", beds.Select(FormatBed))
             : "";
 
-        // Derive current NZ season from the month of the reading
-        var season = current.Timestamp.Month switch
+        // Derive current NZ season from today's month
+        var season = DateTimeOffset.Now.Month switch
         {
             12 or 1 or 2 => "summer",
             3 or 4 or 5  => "autumn",
@@ -34,27 +24,13 @@ internal static class GardenInsightParser
             _            => "spring"
         };
 
-        var ch3Line = current.SoilChannel3 is { } ch3
-            ? $"\n            - Soil moisture — channel 3: {ch3.MoisturePercent}%"
-            : "";
-
         return $"""
             You are an expert gardening assistant with deep knowledge of vegetable growing
-            in maritime climates. Analyse the sensor data below and provide daily insights
+            in maritime climates. Analyse the data below and provide daily insights
             for a home food garden in Dunedin, New Zealand (45°S, oceanic climate,
             currently {season}).
 
             {bedsSection}
-
-            ## Current Readings ({current.Timestamp:dd MMM yyyy, h:mm tt})
-            - Outdoor temp: {current.Outdoor.TemperatureCelsius}°C
-              (feels like {current.Outdoor.FeelsLikeCelsius}°C, dew point {current.Outdoor.DewPointCelsius}°C)
-            - Outdoor humidity: {current.Outdoor.HumidityPercent}%
-            - Soil moisture — channel 1: {current.SoilChannel1.MoisturePercent}%
-            - Soil moisture — channel 2: {current.SoilChannel2.MoisturePercent}%{ch3Line}
-
-            ## 7-Day Sensor History
-            {historyTable}
 
             ## 7-Day Weather Forecast (Open-Meteo){frostRiskNote}
             Rain expected in next 3 days: {rainNext3Days:F1}mm
@@ -70,7 +46,7 @@ internal static class GardenInsightParser
 
             ### Observations
             3-5 bullet points of specific, data-driven observations about trends,
-            anomalies, or noteworthy patterns in the sensor data.
+            anomalies, or noteworthy patterns based on the forecast data.
 
             ### Actions
             Concrete, prioritised actions the gardener should take today or in the
@@ -96,10 +72,6 @@ internal static class GardenInsightParser
         if (bed.AreaSqm.HasValue)                 lines.AppendLine($"- Area: {bed.AreaSqm}m²");
         if (!string.IsNullOrEmpty(bed.Soil))      lines.AppendLine($"- Soil: {bed.Soil}");
         if (!string.IsNullOrEmpty(bed.Sun))       lines.AppendLine($"- Sun: {bed.Sun}");
-        if (bed.Channels.Count > 0)
-            lines.AppendLine($"- Sensor channels: {string.Join(", ", bed.Channels)}");
-        else
-            lines.AppendLine("- Sensor channels: none (no sensors installed yet)");
         if (!string.IsNullOrEmpty(bed.Notes))
         {
             lines.AppendLine();
@@ -108,7 +80,7 @@ internal static class GardenInsightParser
         return lines.ToString();
     }
 
-    internal static GardenInsight ParseInsight(string rawText, SensorReading reading)
+    internal static GardenInsight ParseInsight(string rawText)
     {
         var sections = new Dictionary<string, string>();
         var currentSection = "";
@@ -132,14 +104,13 @@ internal static class GardenInsightParser
             sections[currentSection] = currentContent.ToString().Trim();
 
         return new GardenInsight(
-            GeneratedAt: reading.Timestamp,
-            Reading: reading,
-            Summary: sections.GetValueOrDefault("Summary", ""),
-            Observations: sections.GetValueOrDefault("Observations", ""),
-            Actions: sections.GetValueOrDefault("Actions", ""),
+            GeneratedAt:   DateTimeOffset.Now,
+            Summary:       sections.GetValueOrDefault("Summary", ""),
+            Observations:  sections.GetValueOrDefault("Observations", ""),
+            Actions:       sections.GetValueOrDefault("Actions", ""),
             ForecastAdvice: sections.GetValueOrDefault("Forecast Advice", ""),
             GardenersNote: sections.GetValueOrDefault("Gardener's Note", ""),
-            RawResponse: rawText
+            RawResponse:   rawText
         );
     }
 }

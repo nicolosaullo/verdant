@@ -32,7 +32,6 @@ jobs:
           # Relative to repo root — where dotnet run is invoked
           POSTS_OUTPUT_DIR:  ./site/src/content/posts
           BEDS_CONFIG_DIR:   ./garden/beds
-          DATA_LOG_DIR:      ./garden/data
         run: dotnet run --project pipeline/
 
       # ── Astro build ────────────────────────────────────────────────────────

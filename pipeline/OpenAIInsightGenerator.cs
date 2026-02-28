@@ -11,13 +11,9 @@ public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : II
     public string ProviderName => "OpenAI";
     public string ModelName => model;
 
-    public async Task<GardenInsight> GenerateInsightAsync(
-        SensorReading current,
-        List<DailyHistory> history,
-        WeatherForecast forecast,
-        List<GardenBed> beds)
+    public async Task<GardenInsight> GenerateInsightAsync(WeatherForecast forecast, List<GardenBed> beds)
     {
-        var prompt = GardenInsightParser.BuildPrompt(current, history, forecast, beds);
+        var prompt = GardenInsightParser.BuildPrompt(forecast, beds);
         // Only the first bed image is sent to keep token costs down
         var image  = beds.FirstOrDefault(b => b.HasImage);
 
@@ -55,6 +51,6 @@ public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : II
             .GetProperty("content")
             .GetString() ?? throw new Exception("Empty response from OpenAI API");
 
-        return GardenInsightParser.ParseInsight(text, current);
+        return GardenInsightParser.ParseInsight(text);
     }
 }

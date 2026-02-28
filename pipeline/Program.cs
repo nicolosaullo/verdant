@@ -12,54 +12,28 @@ var outputDirectory = Environment.GetEnvironmentVariable("POSTS_OUTPUT_DIR")
 var bedsDirectory = Environment.GetEnvironmentVariable("BEDS_CONFIG_DIR")
     ?? "./garden/beds";
 
-var dataDirectory = Environment.GetEnvironmentVariable("DATA_LOG_DIR")
-    ?? "./garden/data";
-
 // ─── Pipeline ─────────────────────────────────────────────────────────────────
-var useMockSensors = Environment.GetEnvironmentVariable("USE_MOCK_SENSORS") == "true";
-
-if (!useMockSensors)
-{
-    Console.WriteLine("ℹ️  No real sensor provider configured yet.");
-    Console.WriteLine("   Set USE_MOCK_SENSORS=true for local development, or implement EcowittClient for production.");
-    Console.WriteLine("   Pipeline skipped.");
-    return 0;
-}
-
 Console.WriteLine("🌱 Garden AI Pipeline starting...\n");
 
-// Step 1: Load bed config, sensor data, and weather forecast in parallel
-Console.WriteLine("📡 Loading bed config, sensor data, and weather forecast...");
+// Step 1: Load bed config and weather forecast in parallel
+Console.WriteLine("📡 Loading bed config and weather forecast...");
 var bedsTask     = Task.Run(() => GardenBedLoader.LoadAll(bedsDirectory));
-var sensorTask   = Task.Run(() => (MockSensorProvider.GetCurrentReading(), MockSensorProvider.GetSevenDayHistory()));
 var forecastTask = WeatherForecastProvider.GetForecastAsync();
 
-await Task.WhenAll(bedsTask, sensorTask, forecastTask);
+await Task.WhenAll(bedsTask, forecastTask);
 
-var beds                      = bedsTask.Result;
-var (currentReading, history) = sensorTask.Result;
-var forecast                  = forecastTask.Result;
+var beds     = bedsTask.Result;
+var forecast = forecastTask.Result;
 
 if (beds.Count > 0)
-{
     Console.WriteLine($"   Beds loaded: {string.Join(", ", beds.Select(b => $"{b.Name}" + (b.HasImage ? " 📷" : "")))}");
-}
 else
     Console.WriteLine("   No bed config found — running without bed context.");
 
-Console.WriteLine($"   Outdoor temp:     {currentReading.Outdoor.TemperatureCelsius}°C");
-Console.WriteLine($"   Outdoor humidity: {currentReading.Outdoor.HumidityPercent}%");
-Console.WriteLine($"   {currentReading.SoilChannel1.ChannelName}: {currentReading.SoilChannel1.MoisturePercent}%");
-Console.WriteLine($"   {currentReading.SoilChannel2.ChannelName}: {currentReading.SoilChannel2.MoisturePercent}%");
 Console.WriteLine($"   Forecast: {forecast.TotalRainNextDays(3):F1}mm rain in next 3 days" +
                   (forecast.IsFrostRisk ? ", ⚠️ frost risk" : "") + "\n");
 
-// Step 2: Save raw data snapshot
-Console.WriteLine("💾 Saving raw data snapshot...");
-await DataLogger.SaveAsync(currentReading, history, forecast, dataDirectory);
-Console.WriteLine();
-
-// Step 3: Build the generator list from whichever keys are present
+// Step 2: Build the generator list from whichever keys are present
 //   ► Add or remove entries here to change which models are compared
 var generators = new List<IInsightGenerator>();
 
@@ -94,7 +68,7 @@ var tasks = generators.Select(async g =>
 {
     try
     {
-        var insight = await g.GenerateInsightAsync(currentReading, history, forecast, beds);
+        var insight = await g.GenerateInsightAsync(forecast, beds);
         Console.WriteLine($"   ✅ {g.ProviderName}/{g.ModelName} done");
         return new ProviderInsight(g.ProviderName, g.ModelName, insight);
     }
@@ -115,9 +89,9 @@ if (succeeded == 0)
     return 1;
 }
 
-// Step 4: Publish comparison post
+// Step 3: Publish comparison post
 Console.WriteLine("📄 Publishing comparison post...");
-await BlogPostPublisher.SavePostAsync(currentReading, forecast, results, outputDirectory);
+await BlogPostPublisher.SavePostAsync(forecast, results, outputDirectory);
 
 Console.WriteLine("\n✨ Pipeline complete!");
 Console.WriteLine($"   Post saved to: {Path.GetFullPath(outputDirectory)}");

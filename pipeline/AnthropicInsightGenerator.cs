@@ -11,13 +11,9 @@ public class AnthropicInsightGenerator(string apiKey, string model = "claude-opu
     public string ProviderName => "Anthropic";
     public string ModelName => model;
 
-    public async Task<GardenInsight> GenerateInsightAsync(
-        SensorReading current,
-        List<DailyHistory> history,
-        WeatherForecast forecast,
-        List<GardenBed> beds)
+    public async Task<GardenInsight> GenerateInsightAsync(WeatherForecast forecast, List<GardenBed> beds)
     {
-        var prompt = GardenInsightParser.BuildPrompt(current, history, forecast, beds);
+        var prompt = GardenInsightParser.BuildPrompt(forecast, beds);
         // Only the first bed image is sent to keep token costs down
         var image  = beds.FirstOrDefault(b => b.HasImage);
 
@@ -60,6 +56,6 @@ public class AnthropicInsightGenerator(string apiKey, string model = "claude-opu
             .GetProperty("text")
             .GetString() ?? throw new Exception("Empty response from Anthropic API");
 
-        return GardenInsightParser.ParseInsight(text, current);
+        return GardenInsightParser.ParseInsight(text);
     }
 }
