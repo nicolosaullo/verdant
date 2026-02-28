@@ -18,6 +18,6 @@ import { defineConfig } from 'astro/config';
 // ────────────────────────────────────────────────────────────────────────────
 
 export default defineConfig({
-  site: 'https://username.github.io',   // ← replace with your GitHub username
+  site: 'https://nicolosaullo.github.io',
   base: '/verdant',                     // ← replace with your repo name (or remove)
 });
