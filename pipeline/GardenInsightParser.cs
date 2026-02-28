@@ -6,7 +6,10 @@ namespace GardenAI;
 /// </summary>
 internal static class GardenInsightParser
 {
-    internal static string BuildPrompt(SensorReading current, List<DailyHistory> history)
+    internal static string BuildPrompt(
+        SensorReading current,
+        List<DailyHistory> history,
+        WeatherForecast forecast)
     {
         var historyTable = string.Join("\n", history.Select(h =>
             $"  {h.Date:dd MMM}: Temp {h.TempMin}–{h.TempMax}°C (avg {h.TempAvg}°C), " +
@@ -14,6 +17,9 @@ internal static class GardenInsightParser
             $"{current.SoilChannel1.ChannelName} soil {h.SoilCh1Avg}%, " +
             $"{current.SoilChannel2.ChannelName} soil {h.SoilCh2Avg}%"
         ));
+
+        var rainNext3Days  = forecast.TotalRainNextDays(3);
+        var frostRiskNote  = forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "";
 
         return $"""
             You are an expert gardening assistant with deep knowledge of vegetable growing
@@ -28,8 +34,12 @@ internal static class GardenInsightParser
             - Soil moisture — {current.SoilChannel1.ChannelName}: {current.SoilChannel1.MoisturePercent}%
             - Soil moisture — {current.SoilChannel2.ChannelName}: {current.SoilChannel2.MoisturePercent}%
 
-            ## 7-Day History
+            ## 7-Day Sensor History
             {historyTable}
+
+            ## 7-Day Weather Forecast (Open-Meteo){frostRiskNote}
+            Rain expected in next 3 days: {rainNext3Days:F1}mm
+            {forecast.ToPromptTable()}
 
             ## Your task
             Respond in the following EXACT format with these section headers:
@@ -44,12 +54,14 @@ internal static class GardenInsightParser
 
             ### Actions
             Concrete, prioritised actions the gardener should take today or in the
-            next 24 hours. Be specific (e.g. "Water the tomato bed — soil moisture
-            has dropped below 40% and the trend shows continued drying").
+            next 24 hours. Factor in the weather forecast — if significant rain is
+            coming soon, avoid watering. If a frost is forecast, recommend protection.
+            Be specific (e.g. "Hold off watering the tomato bed — 12mm of rain is
+            forecast tomorrow").
 
             ### Forecast Advice
-            1-2 sentences on what to watch for over the next few days given current
-            conditions and the time of year in Dunedin.
+            1-2 sentences on what to watch for over the next few days, using the
+            weather forecast data to give specific, actionable guidance.
 
             ### Gardener's Note
             A short (1-2 sentence) reflective or encouraging note that acknowledges

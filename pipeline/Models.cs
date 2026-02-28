@@ -59,5 +59,5 @@ public interface IInsightGenerator
 {
     string ProviderName { get; }
     string ModelName { get; }
-    Task<GardenInsight> GenerateInsightAsync(SensorReading current, List<DailyHistory> history);
+    Task<GardenInsight> GenerateInsightAsync(SensorReading current, List<DailyHistory> history, WeatherForecast forecast);
 }

@@ -12,15 +12,22 @@ var outputDirectory = Environment.GetEnvironmentVariable("POSTS_OUTPUT_DIR")
 // ─── Pipeline ─────────────────────────────────────────────────────────────────
 Console.WriteLine("🌱 Garden AI Pipeline starting...\n");
 
-// Step 1: Sensor data
-Console.WriteLine("📡 Fetching sensor data (mock)...");
-var currentReading = MockSensorProvider.GetCurrentReading();
-var history        = MockSensorProvider.GetSevenDayHistory();
+// Step 1: Sensor data + weather forecast (fetched in parallel)
+Console.WriteLine("📡 Fetching sensor data (mock) and weather forecast...");
+var sensorTask   = Task.Run(() => (MockSensorProvider.GetCurrentReading(), MockSensorProvider.GetSevenDayHistory()));
+var forecastTask = WeatherForecastProvider.GetForecastAsync();
+
+await Task.WhenAll(sensorTask, forecastTask);
+
+var (currentReading, history) = sensorTask.Result;
+var forecast = forecastTask.Result;
 
 Console.WriteLine($"   Outdoor temp:     {currentReading.Outdoor.TemperatureCelsius}°C");
 Console.WriteLine($"   Outdoor humidity: {currentReading.Outdoor.HumidityPercent}%");
 Console.WriteLine($"   {currentReading.SoilChannel1.ChannelName}: {currentReading.SoilChannel1.MoisturePercent}%");
-Console.WriteLine($"   {currentReading.SoilChannel2.ChannelName}: {currentReading.SoilChannel2.MoisturePercent}%\n");
+Console.WriteLine($"   {currentReading.SoilChannel2.ChannelName}: {currentReading.SoilChannel2.MoisturePercent}%");
+Console.WriteLine($"   Forecast: {forecast.TotalRainNextDays(3):F1}mm rain in next 3 days" +
+                  (forecast.IsFrostRisk ? ", ⚠️ frost risk" : "") + "\n");
 
 // Step 2: Build the generator list from whichever keys are present
 //   ► Add or remove entries here to change which models are compared
@@ -57,7 +64,7 @@ var tasks = generators.Select(async g =>
 {
     try
     {
-        var insight = await g.GenerateInsightAsync(currentReading, history);
+        var insight = await g.GenerateInsightAsync(currentReading, history, forecast);
         Console.WriteLine($"   ✅ {g.ProviderName}/{g.ModelName} done");
         return new ProviderInsight(g.ProviderName, g.ModelName, insight);
     }
@@ -80,7 +87,7 @@ if (succeeded == 0)
 
 // Step 3: Publish comparison post
 Console.WriteLine("📄 Publishing comparison post...");
-await BlogPostPublisher.SavePostAsync(currentReading, results, outputDirectory);
+await BlogPostPublisher.SavePostAsync(currentReading, forecast, results, outputDirectory);
 
 Console.WriteLine("\n✨ Pipeline complete!");
 Console.WriteLine($"   Post saved to: {Path.GetFullPath(outputDirectory)}");

@@ -12,7 +12,7 @@ public static class BlogPostPublisher
     /// <summary>
     /// Generates a comparison Markdown post covering every model that responded.
     /// </summary>
-    public static string GenerateMarkdown(SensorReading reading, IEnumerable<ProviderInsight> results)
+    public static string GenerateMarkdown(SensorReading reading, WeatherForecast forecast, IEnumerable<ProviderInsight> results)
     {
         var all        = results.ToList();
         var successful = all.Where(r => r.Succeeded).ToList();
@@ -66,6 +66,15 @@ public static class BlogPostPublisher
 
             *Recorded at {timeStr} NZST*
 
+            ### 7-Day Weather Forecast{(forecast.IsFrostRisk ? " — ⚠️ Frost risk in next 3 days" : "")}
+
+            | Date | Max | Min | Rain | Rain% | Wind | UV |
+            |------|-----|-----|------|-------|------|----|
+            {string.Join("\n            ", forecast.Days.Select(d =>
+                $"| {d.Date} | {d.TempMaxCelsius:F1}°C | {d.TempMinCelsius:F1}°C | {d.PrecipitationMm:F1}mm | {d.PrecipProbPct}% | {d.WindspeedKph:F0}kph | {d.UvIndex:F1} |"))}
+
+            *Forecast from [Open-Meteo](https://open-meteo.com) · Dunedin, NZ*
+
             ---
 
             ## AI Model Comparison
@@ -107,6 +116,7 @@ public static class BlogPostPublisher
 
     public static async Task SavePostAsync(
         SensorReading reading,
+        WeatherForecast forecast,
         IEnumerable<ProviderInsight> results,
         string outputDirectory)
     {
@@ -117,7 +127,7 @@ public static class BlogPostPublisher
         Directory.CreateDirectory(outputDirectory);
         var date     = successful[0].Insight!.GeneratedAt;
         var filename = Path.Combine(outputDirectory, $"{date:yyyy-MM-dd}.md");
-        var markdown = GenerateMarkdown(reading, results);
+        var markdown = GenerateMarkdown(reading, forecast, results);
         await File.WriteAllTextAsync(filename, markdown);
         Console.WriteLine($"✅ Blog post saved: {filename}");
     }

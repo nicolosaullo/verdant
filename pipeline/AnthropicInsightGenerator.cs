@@ -11,13 +11,13 @@ public class AnthropicInsightGenerator(string apiKey, string model = "claude-opu
     public string ProviderName => "Anthropic";
     public string ModelName => model;
 
-    public async Task<GardenInsight> GenerateInsightAsync(SensorReading current, List<DailyHistory> history)
+    public async Task<GardenInsight> GenerateInsightAsync(SensorReading current, List<DailyHistory> history, WeatherForecast forecast)
     {
         var requestBody = new
         {
             model,
             max_tokens = 1500,
-            messages = new[] { new { role = "user", content = GardenInsightParser.BuildPrompt(current, history) } }
+            messages = new[] { new { role = "user", content = GardenInsightParser.BuildPrompt(current, history, forecast) } }
         };
 
         using var request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
