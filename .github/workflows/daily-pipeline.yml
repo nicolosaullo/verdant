@@ -1,0 +1,70 @@
+name: Daily Garden AI Pipeline
+
+on:
+  schedule:
+    - cron: '0 20 * * *'   # 8 am NZST (UTC+12) = 20:00 UTC
+  workflow_dispatch:         # manual runs from the Actions tab
+
+permissions:
+  contents: write   # commit new posts back to the repo
+  pages: write      # deploy to GitHub Pages
+  id-token: write   # OIDC token required by actions/deploy-pages
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── .NET pipeline ──────────────────────────────────────────────────────
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run Garden AI Pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY:    ${{ secrets.OPENAI_API_KEY }}
+          # Relative to repo root — where dotnet run is invoked
+          POSTS_OUTPUT_DIR:  ./site/src/content/posts
+        run: dotnet run --project pipeline/
+
+      # ── Astro build ────────────────────────────────────────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install site dependencies
+        working-directory: site
+        run: npm install
+
+      - name: Build Astro site
+        working-directory: site
+        run: npm run build
+
+      # ── GitHub Pages deploy ────────────────────────────────────────────────
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+      # ── Persist the new post in git (for future pipeline runs) ────────────
+      - name: Commit new post
+        run: |
+          git config user.name  "Garden AI Bot"
+          git config user.email "garden-ai@noreply.github.com"
+          git add site/src/content/posts/
+          git diff --staged --quiet \
+            || git commit -m "🌱 Daily garden update $(date +'%Y-%m-%d')"
+          git push
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

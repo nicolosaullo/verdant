@@ -1,0 +1,14 @@
+# .NET
+pipeline/bin/
+pipeline/obj/
+pipeline/output/
+
+# Node / Astro
+site/node_modules/
+site/dist/
+site/.env
+site/.env.production
+
+# Misc
+.DS_Store
+*.user
