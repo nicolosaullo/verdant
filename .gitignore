@@ -10,6 +10,9 @@ site/dist/
 site/.env
 site/.env.production
 
+# Garden data snapshots (ephemeral JSON, not committed)
+garden/data/
+
 # Misc
 .DS_Store
 *.user

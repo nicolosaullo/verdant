@@ -19,7 +19,7 @@ public static class GardenBedLoader
 
         return Directory.GetFiles(bedsDirectory, "*.md")
             .Select(Load)
-            .OrderBy(b => b.Channels.Min())
+            .OrderBy(b => b.Channels.DefaultIfEmpty(int.MaxValue).Min())
             .ToList();
     }
 
@@ -28,11 +28,15 @@ public static class GardenBedLoader
         var raw = File.ReadAllText(filePath);
         var (meta, body) = ParseFrontmatter(raw);
 
-        // channels: accepts "1" or "1, 2"
+        // channels: accepts "1" or "1, 2" — non-integer values are silently skipped
         var channels = meta.TryGetValue("channels", out var ch)
-            ? ch.Split(',').Select(s => int.Parse(s.Trim())).ToList()
-            : meta.TryGetValue("channel", out var single)
-                ? [int.Parse(single.Trim())]
+            ? ch.Split(',')
+                .Select(s => s.Trim())
+                .Where(s => int.TryParse(s, out _))
+                .Select(int.Parse)
+                .ToList()
+            : meta.TryGetValue("channel", out var single) && int.TryParse(single.Trim(), out var singleVal)
+                ? [singleVal]
                 : new List<int>();
 
         // optional image alongside the markdown file
