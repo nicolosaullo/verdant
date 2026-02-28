@@ -8,7 +8,7 @@ namespace GardenAI;
 /// </summary>
 public static class WeatherForecastProvider
 {
-    private static readonly HttpClient _http = new();
+    private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(30) };
 
     private const string Url =
         "https://api.open-meteo.com/v1/forecast" +
@@ -19,29 +19,38 @@ public static class WeatherForecastProvider
 
     public static async Task<WeatherForecast> GetForecastAsync()
     {
-        var json = await _http.GetStringAsync(Url);
-        var doc  = JsonDocument.Parse(json);
-        var daily = doc.RootElement.GetProperty("daily");
+        try
+        {
+            var json  = await _http.GetStringAsync(Url);
+            var doc   = JsonDocument.Parse(json);
+            var daily = doc.RootElement.GetProperty("daily");
 
-        var dates    = daily.GetProperty("time").EnumerateArray().Select(e => e.GetString()!).ToArray();
-        var tempMax  = daily.GetProperty("temperature_2m_max").EnumerateArray().Select(e => e.GetDouble()).ToArray();
-        var tempMin  = daily.GetProperty("temperature_2m_min").EnumerateArray().Select(e => e.GetDouble()).ToArray();
-        var rain     = daily.GetProperty("precipitation_sum").EnumerateArray().Select(e => e.GetDouble()).ToArray();
-        var rainProb = daily.GetProperty("precipitation_probability_max").EnumerateArray().Select(e => e.GetInt32()).ToArray();
-        var wind     = daily.GetProperty("windspeed_10m_max").EnumerateArray().Select(e => e.GetDouble()).ToArray();
-        var uv       = daily.GetProperty("uv_index_max").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+            var dates    = daily.GetProperty("time").EnumerateArray().Select(e => e.GetString()!).ToArray();
+            var tempMax  = daily.GetProperty("temperature_2m_max").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+            var tempMin  = daily.GetProperty("temperature_2m_min").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+            var rain     = daily.GetProperty("precipitation_sum").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+            var rainProb = daily.GetProperty("precipitation_probability_max").EnumerateArray().Select(e => e.GetInt32()).ToArray();
+            var wind     = daily.GetProperty("windspeed_10m_max").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+            var uv       = daily.GetProperty("uv_index_max").EnumerateArray().Select(e => e.GetDouble()).ToArray();
 
-        var days = dates.Select((date, i) => new ForecastDay(
-            Date:            date,
-            TempMaxCelsius:  tempMax[i],
-            TempMinCelsius:  tempMin[i],
-            PrecipitationMm: rain[i],
-            PrecipProbPct:   rainProb[i],
-            WindspeedKph:    wind[i],
-            UvIndex:         uv[i]
-        )).ToList();
+            var days = dates.Select((date, i) => new ForecastDay(
+                Date:            date,
+                TempMaxCelsius:  tempMax[i],
+                TempMinCelsius:  tempMin[i],
+                PrecipitationMm: rain[i],
+                PrecipProbPct:   rainProb[i],
+                WindspeedKph:    wind[i],
+                UvIndex:         uv[i]
+            )).ToList();
 
-        return new WeatherForecast(days);
+            return new WeatherForecast(days);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"   ⚠️  Weather forecast unavailable: {ex.Message}");
+            Console.WriteLine("      Pipeline will continue without forecast data.");
+            return new WeatherForecast([]);
+        }
     }
 }
 

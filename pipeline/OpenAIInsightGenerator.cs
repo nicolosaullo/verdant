@@ -5,7 +5,7 @@ namespace GardenAI;
 
 public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : IInsightGenerator
 {
-    private static readonly HttpClient _http = new();
+    private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(3) };
     private const string ApiUrl = "https://api.openai.com/v1/chat/completions";
 
     public string ProviderName => "OpenAI";
@@ -18,6 +18,7 @@ public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : II
         List<GardenBed> beds)
     {
         var prompt = GardenInsightParser.BuildPrompt(current, history, forecast, beds);
+        // Only the first bed image is sent to keep token costs down
         var image  = beds.FirstOrDefault(b => b.HasImage);
 
         // Build message content — image block first if available

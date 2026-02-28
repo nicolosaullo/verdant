@@ -5,7 +5,7 @@ namespace GardenAI;
 
 public class AnthropicInsightGenerator(string apiKey, string model = "claude-opus-4-6") : IInsightGenerator
 {
-    private static readonly HttpClient _http = new();
+    private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(3) };
     private const string ApiUrl = "https://api.anthropic.com/v1/messages";
 
     public string ProviderName => "Anthropic";
@@ -18,6 +18,7 @@ public class AnthropicInsightGenerator(string apiKey, string model = "claude-opu
         List<GardenBed> beds)
     {
         var prompt = GardenInsightParser.BuildPrompt(current, history, forecast, beds);
+        // Only the first bed image is sent to keep token costs down
         var image  = beds.FirstOrDefault(b => b.HasImage);
 
         // Build message content — image block first if available
