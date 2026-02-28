@@ -1,0 +1,20 @@
+{
+  // Copy this file to launchSettings.json and fill in your real API keys.
+  // launchSettings.json is gitignored — your keys will never be committed.
+  //
+  // Usage:
+  //   cd pipeline && dotnet run          (uses this file automatically)
+  //   dotnet run --project pipeline/     (from repo root, also works)
+  "profiles": {
+    "GardenAI": {
+      "commandName": "Project",
+      "workingDirectory": "../",
+      "environmentVariables": {
+        "ANTHROPIC_API_KEY": "sk-ant-YOUR-KEY-HERE",
+        "OPENAI_API_KEY":    "sk-YOUR-KEY-HERE",
+        "POSTS_OUTPUT_DIR":  "./site/src/content/posts",
+        "BEDS_CONFIG_DIR":   "./garden/beds"
+      }
+    }
+  }
+}

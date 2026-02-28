@@ -2,6 +2,7 @@
 pipeline/bin/
 pipeline/obj/
 pipeline/output/
+pipeline/Properties/launchSettings.json
 
 # Node / Astro
 site/node_modules/
