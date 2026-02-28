@@ -33,7 +33,6 @@ jobs:
           POSTS_OUTPUT_DIR:  ./site/src/content/posts
           BEDS_CONFIG_DIR:   ./garden/beds
           DATA_LOG_DIR:      ./garden/data
-          USE_MOCK_SENSORS:  "true"
         run: dotnet run --project pipeline/
 
       # ── Astro build ────────────────────────────────────────────────────────

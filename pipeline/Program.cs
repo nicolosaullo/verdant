@@ -20,8 +20,9 @@ var useMockSensors = Environment.GetEnvironmentVariable("USE_MOCK_SENSORS") == "
 
 if (!useMockSensors)
 {
-    Console.WriteLine("ℹ️  USE_MOCK_SENSORS is not set and no real sensor provider is configured yet.");
-    Console.WriteLine("   Pipeline skipped — waiting for hardware.");
+    Console.WriteLine("ℹ️  No real sensor provider configured yet.");
+    Console.WriteLine("   Set USE_MOCK_SENSORS=true for local development, or implement EcowittClient for production.");
+    Console.WriteLine("   Pipeline skipped.");
     return 0;
 }
 

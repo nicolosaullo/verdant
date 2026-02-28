@@ -24,12 +24,12 @@ public static class MockSensorProvider
                 FeelsLikeCelsius: Math.Round(temp - 1.2, 1)
             ),
             SoilChannel1: new SoilReading(
-                ChannelName: "Tomatoes (North bed)",
+                ChannelName: "Brassica Bed (Ch.1)",
                 MoisturePercent: 34,       // Getting dry — action needed
                 BatteryVoltage: 1.52
             ),
             SoilChannel2: new SoilReading(
-                ChannelName: "Courgettes (South bed)",
+                ChannelName: "Brassica Bed (Ch.2)",
                 MoisturePercent: 58,       // Healthy range
                 BatteryVoltage: 1.49
             )
