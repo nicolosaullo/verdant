@@ -46,7 +46,7 @@ public static class BlogPostPublisher
         return $"""
             ---
             title: "Garden Update — {friendlyDate}"
-            date: {slug}
+            date: "{slug}"
             description: "{EscapeYaml(TruncateAtWord(successful[0].Insight!.Summary, 160))}"
             tags: [garden, sensors, ai-insights]
             ---
