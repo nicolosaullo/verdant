@@ -21,6 +21,10 @@ public static class BlogPostPublisher
         var slug         = generatedAt.ToString("yyyy-MM-dd");
         var friendlyDate = generatedAt.ToString("dddd, d MMMM yyyy");
         var timeStr      = generatedAt.ToString("h:mm tt");
+        // NZDT (UTC+13) is active Oct–Apr; NZST (UTC+12) applies May–Sep
+        // NZDT (UTC+13) applies Oct–Mar; NZST (UTC+12) applies Apr–Sep
+        // Month-based: works correctly even when the pipeline runs in UTC (GitHub Actions)
+        var tzLabel      = generatedAt.Month is >= 10 or <= 3 ? "NZDT" : "NZST";
 
         var soil1Status = SoilStatusLabel(reading.SoilChannel1.MoisturePercent);
         var soil2Status = SoilStatusLabel(reading.SoilChannel2.MoisturePercent);
@@ -43,7 +47,7 @@ public static class BlogPostPublisher
             ---
             title: "Garden Update — {friendlyDate}"
             date: {slug}
-            description: "{EscapeYaml(successful[0].Insight!.Summary.Split('.')[0])}."
+            description: "{EscapeYaml(TruncateAtWord(successful[0].Insight!.Summary, 160))}"
             tags: [garden, sensors, ai-insights]
             ---
 
@@ -64,13 +68,13 @@ public static class BlogPostPublisher
             | 🪴 {reading.SoilChannel1.ChannelName} | {reading.SoilChannel1.MoisturePercent}% {soil1Status} |
             | 🪴 {reading.SoilChannel2.ChannelName} | {reading.SoilChannel2.MoisturePercent}% {soil2Status} |
 
-            *Recorded at {timeStr} NZST*
+            *Recorded at {timeStr} {tzLabel}*
 
             ### 7-Day Weather Forecast{(forecast.IsFrostRisk ? " — ⚠️ Frost risk in next 3 days" : "")}
 
             | Date | Max | Min | Rain | Rain% | Wind | UV |
             |------|-----|-----|------|-------|------|----|
-            {string.Join("\n            ", forecast.Days.Select(d =>
+            {string.Join("\n", forecast.Days.Select(d =>
                 $"| {d.Date} | {d.TempMaxCelsius:F1}°C | {d.TempMinCelsius:F1}°C | {d.PrecipitationMm:F1}mm | {d.PrecipProbPct}% | {d.WindspeedKph:F0}kph | {d.UvIndex:F1} |"))}
 
             *Forecast from [Open-Meteo](https://open-meteo.com) · Dunedin, NZ*
@@ -142,4 +146,12 @@ public static class BlogPostPublisher
 
     private static string EscapeYaml(string s) =>
         s.Replace("\"", "'").Replace("\n", " ").Trim();
+
+    private static string TruncateAtWord(string s, int maxLength)
+    {
+        s = s.Replace("\n", " ").Trim();
+        if (s.Length <= maxLength) return s;
+        var cut = s.LastIndexOf(' ', maxLength);
+        return cut > 0 ? s[..cut].TrimEnd() + "…" : s[..maxLength] + "…";
+    }
 }

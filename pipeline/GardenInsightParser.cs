@@ -25,11 +25,24 @@ internal static class GardenInsightParser
             ? "## Garden Beds\n\n" + string.Join("\n\n", beds.Select(FormatBed))
             : "";
 
+        // Derive current NZ season from the month of the reading
+        var season = current.Timestamp.Month switch
+        {
+            12 or 1 or 2 => "summer",
+            3 or 4 or 5  => "autumn",
+            6 or 7 or 8  => "winter",
+            _            => "spring"
+        };
+
+        var ch3Line = current.SoilChannel3 is { } ch3
+            ? $"\n            - Soil moisture — channel 3: {ch3.MoisturePercent}%"
+            : "";
+
         return $"""
             You are an expert gardening assistant with deep knowledge of vegetable growing
             in maritime climates. Analyse the sensor data below and provide daily insights
             for a home food garden in Dunedin, New Zealand (45°S, oceanic climate,
-            currently late summer / early autumn).
+            currently {season}).
 
             {bedsSection}
 
@@ -38,7 +51,7 @@ internal static class GardenInsightParser
               (feels like {current.Outdoor.FeelsLikeCelsius}°C, dew point {current.Outdoor.DewPointCelsius}°C)
             - Outdoor humidity: {current.Outdoor.HumidityPercent}%
             - Soil moisture — channel 1: {current.SoilChannel1.MoisturePercent}%
-            - Soil moisture — channel 2: {current.SoilChannel2.MoisturePercent}%
+            - Soil moisture — channel 2: {current.SoilChannel2.MoisturePercent}%{ch3Line}
 
             ## 7-Day Sensor History
             {historyTable}
@@ -83,7 +96,10 @@ internal static class GardenInsightParser
         if (bed.AreaSqm.HasValue)                 lines.AppendLine($"- Area: {bed.AreaSqm}m²");
         if (!string.IsNullOrEmpty(bed.Soil))      lines.AppendLine($"- Soil: {bed.Soil}");
         if (!string.IsNullOrEmpty(bed.Sun))       lines.AppendLine($"- Sun: {bed.Sun}");
-        lines.AppendLine($"- Sensor channels: {string.Join(", ", bed.Channels)}");
+        if (bed.Channels.Count > 0)
+            lines.AppendLine($"- Sensor channels: {string.Join(", ", bed.Channels)}");
+        else
+            lines.AppendLine("- Sensor channels: none (no sensors installed yet)");
         if (!string.IsNullOrEmpty(bed.Notes))
         {
             lines.AppendLine();
