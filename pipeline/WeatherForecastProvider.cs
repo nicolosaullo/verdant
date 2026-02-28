@@ -4,7 +4,7 @@ namespace GardenAI;
 
 /// <summary>
 /// Fetches a 7-day hourly weather forecast from Open-Meteo (free, no API key).
-/// Dunedin coordinates: -45.8788, 170.5028
+/// Port Chalmers coordinates: -45.8175, 170.6275
 /// </summary>
 public static class WeatherForecastProvider
 {
@@ -12,7 +12,7 @@ public static class WeatherForecastProvider
 
     private const string Url =
         "https://api.open-meteo.com/v1/forecast" +
-        "?latitude=-45.8788&longitude=170.5028" +
+        "?latitude=-45.8175&longitude=170.6275" +
         "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max,uv_index_max" +
         "&timezone=Pacific%2FAuckland" +
         "&forecast_days=7";
