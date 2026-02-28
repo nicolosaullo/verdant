@@ -6,7 +6,7 @@ namespace GardenAI;
 /// </summary>
 internal static class GardenInsightParser
 {
-    internal static string BuildPrompt(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds)
+    internal static string BuildPrompt(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds, DaylightInfo? daylight = null)
     {
         var season = DateTimeOffset.Now.Month switch
         {
@@ -20,12 +20,25 @@ internal static class GardenInsightParser
             ? "## Garden Beds\n\n" + string.Join("\n\n", beds.Select(FormatBed))
             : "";
 
+        var daylightSection = daylight is not null
+            ? $"Day length: {daylight.DayLengthHours:F2} hours " +
+              $"(sunrise {daylight.SunriseLocal}, sunset {daylight.SunsetLocal} NZST/NZDT). " +
+              $"Season: {season} at 45°S — watch for bolting in brassicas/lettuce if days are long."
+            : $"Season: {season} at 45°S.";
+
+        var today = forecast.Days.FirstOrDefault();
+        var et0Section = today is not null
+            ? $"Today's ET₀: {today.Et0Mm:F1}mm, solar radiation: {today.ShortwaveRadiationMjm2:F1} MJ/m²."
+            : "";
+
         return promptTemplate
-            .Replace("{{SEASON}}",        season)
-            .Replace("{{BEDS}}",          bedsSection)
-            .Replace("{{FROST_NOTE}}",    forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "")
-            .Replace("{{RAIN_3DAY}}",     forecast.TotalRainNextDays(3).ToString("F1"))
-            .Replace("{{FORECAST_TABLE}}", forecast.ToPromptTable());
+            .Replace("{{SEASON}}",         season)
+            .Replace("{{BEDS}}",           bedsSection)
+            .Replace("{{FROST_NOTE}}",     forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "")
+            .Replace("{{RAIN_3DAY}}",      forecast.TotalRainNextDays(3).ToString("F1"))
+            .Replace("{{FORECAST_TABLE}}", forecast.ToPromptTable())
+            .Replace("{{DAYLIGHT}}",       daylightSection)
+            .Replace("{{ET0_TODAY}}",      et0Section);
     }
 
     private static string FormatBed(GardenBed bed)

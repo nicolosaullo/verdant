@@ -12,7 +12,7 @@ public static class BlogPostPublisher
     /// <summary>
     /// Generates a comparison Markdown post covering every model that responded.
     /// </summary>
-    public static string GenerateMarkdown(WeatherForecast forecast, IEnumerable<ProviderInsight> results)
+    public static string GenerateMarkdown(WeatherForecast forecast, IEnumerable<ProviderInsight> results, DaylightInfo? daylight = null)
     {
         var all        = results.ToList();
         var successful = all.Where(r => r.Succeeded).ToList();
@@ -54,10 +54,10 @@ public static class BlogPostPublisher
 
             ### 7-Day Weather Forecast{(forecast.IsFrostRisk ? " — ⚠️ Frost risk in next 3 days" : "")}
 
-            | Date | Max | Min | Rain | Rain% | Wind | UV |
-            |------|-----|-----|------|-------|------|----|
+            {(daylight is not null ? $"> 🌅 Sunrise: {daylight.SunriseLocal} · Sunset: {daylight.SunsetLocal} · Day length: **{daylight.DayLengthHours:F1} hrs**\n\n" : "")}| Date | Max | Min | Rain | Rain% | Wind | UV | ET₀ | Radiation |
+            |------|-----|-----|------|-------|------|-----|------|-----------|
             {string.Join("\n", forecast.Days.Select(d =>
-                $"| {d.Date} | {d.TempMaxCelsius:F1}°C | {d.TempMinCelsius:F1}°C | {d.PrecipitationMm:F1}mm | {d.PrecipProbPct}% | {d.WindspeedKph:F0}kph | {d.UvIndex:F1} |"))}
+                $"| {d.Date} | {d.TempMaxCelsius:F1}°C | {d.TempMinCelsius:F1}°C | {d.PrecipitationMm:F1}mm | {d.PrecipProbPct}% | {d.WindspeedKph:F0}kph | {d.UvIndex:F1} | {d.Et0Mm:F1}mm | {d.ShortwaveRadiationMjm2:F1}MJ/m² |"))}
 
             *Generated at {generatedAt:h:mm tt} {tzLabel}*
 
@@ -103,7 +103,8 @@ public static class BlogPostPublisher
     public static async Task SavePostAsync(
         WeatherForecast forecast,
         IEnumerable<ProviderInsight> results,
-        string outputDirectory)
+        string outputDirectory,
+        DaylightInfo? daylight = null)
     {
         var successful = results.Where(r => r.Succeeded).ToList();
         if (successful.Count == 0)
@@ -112,7 +113,7 @@ public static class BlogPostPublisher
         Directory.CreateDirectory(outputDirectory);
         var date     = successful[0].Insight!.GeneratedAt;
         var filename = Path.Combine(outputDirectory, $"{date:yyyy-MM-dd}.md");
-        var markdown = GenerateMarkdown(forecast, results);
+        var markdown = GenerateMarkdown(forecast, results, daylight);
         await File.WriteAllTextAsync(filename, markdown);
         Console.WriteLine($"✅ Blog post saved: {filename}");
     }

@@ -29,11 +29,13 @@ var promptTemplate = await File.ReadAllTextAsync(promptFile);
 
 var bedsTask     = Task.Run(() => GardenBedLoader.LoadAll(bedsDirectory));
 var forecastTask = WeatherForecastProvider.GetForecastAsync();
+var daylightTask = DaylightProvider.GetDaylightAsync();
 
-await Task.WhenAll(bedsTask, forecastTask);
+await Task.WhenAll(bedsTask, forecastTask, daylightTask);
 
 var beds     = bedsTask.Result;
 var forecast = forecastTask.Result;
+var daylight = daylightTask.Result;
 
 if (beds.Count > 0)
     Console.WriteLine($"   Beds loaded: {string.Join(", ", beds.Select(b => $"{b.Name}" + (b.HasImage ? " 📷" : "")))}");
@@ -41,7 +43,8 @@ else
     Console.WriteLine("   No bed config found — running without bed context.");
 
 Console.WriteLine($"   Forecast: {forecast.TotalRainNextDays(3):F1}mm rain in next 3 days" +
-                  (forecast.IsFrostRisk ? ", ⚠️ frost risk" : "") + "\n");
+                  (forecast.IsFrostRisk ? ", ⚠️ frost risk" : "") +
+                  (daylight is not null ? $", day length: {daylight.DayLengthHours:F1}h" : "") + "\n");
 
 // Step 2: Build the generator list from whichever keys are present
 //   ► Add or remove entries here to change which models are compared
@@ -78,7 +81,7 @@ var tasks = generators.Select(async g =>
 {
     try
     {
-        var insight = await g.GenerateInsightAsync(promptTemplate, forecast, beds);
+        var insight = await g.GenerateInsightAsync(promptTemplate, forecast, beds, daylight);
         Console.WriteLine($"   ✅ {g.ProviderName}/{g.ModelName} done");
         return new ProviderInsight(g.ProviderName, g.ModelName, insight);
     }
@@ -101,7 +104,7 @@ if (succeeded == 0)
 
 // Step 3: Publish comparison post
 Console.WriteLine("📄 Publishing comparison post...");
-await BlogPostPublisher.SavePostAsync(forecast, results, outputDirectory);
+await BlogPostPublisher.SavePostAsync(forecast, results, outputDirectory, daylight);
 
 Console.WriteLine("\n✨ Pipeline complete!");
 Console.WriteLine($"   Post saved to: {Path.GetFullPath(outputDirectory)}");

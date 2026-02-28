@@ -13,7 +13,7 @@ public static class WeatherForecastProvider
     private const string Url =
         "https://api.open-meteo.com/v1/forecast" +
         "?latitude=-45.8175&longitude=170.6275" +
-        "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max,uv_index_max" +
+        "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max,uv_index_max,et0_fao_evapotranspiration,shortwave_radiation_sum" +
         "&timezone=Pacific%2FAuckland" +
         "&forecast_days=7";
 
@@ -32,15 +32,19 @@ public static class WeatherForecastProvider
             var rainProb = daily.GetProperty("precipitation_probability_max").EnumerateArray().Select(e => e.GetInt32()).ToArray();
             var wind     = daily.GetProperty("windspeed_10m_max").EnumerateArray().Select(e => e.GetDouble()).ToArray();
             var uv       = daily.GetProperty("uv_index_max").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+            var et0      = daily.GetProperty("et0_fao_evapotranspiration").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+            var radiation = daily.GetProperty("shortwave_radiation_sum").EnumerateArray().Select(e => e.GetDouble()).ToArray();
 
             var days = dates.Select((date, i) => new ForecastDay(
-                Date:            date,
-                TempMaxCelsius:  tempMax[i],
-                TempMinCelsius:  tempMin[i],
-                PrecipitationMm: rain[i],
-                PrecipProbPct:   rainProb[i],
-                WindspeedKph:    wind[i],
-                UvIndex:         uv[i]
+                Date:                    date,
+                TempMaxCelsius:          tempMax[i],
+                TempMinCelsius:          tempMin[i],
+                PrecipitationMm:         rain[i],
+                PrecipProbPct:           rainProb[i],
+                WindspeedKph:            wind[i],
+                UvIndex:                 uv[i],
+                Et0Mm:                   et0[i],
+                ShortwaveRadiationMjm2:  radiation[i]
             )).ToList();
 
             return new WeatherForecast(days);
@@ -66,12 +70,12 @@ public record WeatherForecast(List<ForecastDay> Days)
     /// Formats the forecast as a compact table for the AI prompt.
     /// </summary>
     public string ToPromptTable() =>
-        "  Date       | Max  | Min  | Rain  | Rain% | Wind    | UV\n" +
-        "  -----------|------|------|-------|-------|---------|----\n" +
+        "  Date       | Max  | Min  | Rain  | Rain% | Wind    | UV  | ET₀   | Radiation\n" +
+        "  -----------|------|------|-------|-------|---------|-----|-------|----------\n" +
         string.Join("\n", Days.Select(d =>
             $"  {d.Date} | {d.TempMaxCelsius,4:F1}°C | {d.TempMinCelsius,4:F1}°C | " +
             $"{d.PrecipitationMm,4:F1}mm | {d.PrecipProbPct,4}%  | " +
-            $"{d.WindspeedKph,5:F1}kph | {d.UvIndex:F1}"));
+            $"{d.WindspeedKph,5:F1}kph | {d.UvIndex:F1} | {d.Et0Mm:F1}mm | {d.ShortwaveRadiationMjm2:F1}MJ/m²"));
 }
 
 public record ForecastDay(
@@ -81,5 +85,7 @@ public record ForecastDay(
     double PrecipitationMm,
     int    PrecipProbPct,
     double WindspeedKph,
-    double UvIndex
+    double UvIndex,
+    double Et0Mm,
+    double ShortwaveRadiationMjm2
 );

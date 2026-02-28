@@ -42,6 +42,20 @@ public record GardenBed(
     public bool HasImage => ImageData is not null;
 }
 
+public record DaylightInfo(
+    DateTimeOffset SunriseUtc,
+    DateTimeOffset SunsetUtc,
+    double DayLengthHours
+)
+{
+    /// <summary>Local NZST/NZDT time strings for display.</summary>
+    private static readonly TimeZoneInfo Nzt =
+        TimeZoneInfo.FindSystemTimeZoneById("New Zealand Standard Time");
+
+    public string SunriseLocal => TimeZoneInfo.ConvertTime(SunriseUtc, Nzt).ToString("h:mm tt");
+    public string SunsetLocal  => TimeZoneInfo.ConvertTime(SunsetUtc,  Nzt).ToString("h:mm tt");
+};
+
 public interface IInsightGenerator
 {
     string ProviderName { get; }
@@ -49,5 +63,6 @@ public interface IInsightGenerator
     Task<GardenInsight> GenerateInsightAsync(
         string promptTemplate,
         WeatherForecast forecast,
-        List<GardenBed> beds);
+        List<GardenBed> beds,
+        DaylightInfo? daylight = null);
 }
