@@ -6,9 +6,12 @@ namespace GardenAI;
 /// </summary>
 internal static class GardenInsightParser
 {
+    private static readonly TimeZoneInfo NzTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Pacific/Auckland");
+
     internal static string BuildPrompt(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds, DaylightInfo? daylight = null)
     {
-        var season = DateTimeOffset.Now.Month switch
+        var season = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, NzTz).Month switch
         {
             12 or 1 or 2 => "summer",
             3 or 4 or 5  => "autumn",
@@ -81,7 +84,7 @@ internal static class GardenInsightParser
             sections[currentSection] = currentContent.ToString().Trim();
 
         return new GardenInsight(
-            GeneratedAt:   DateTimeOffset.Now,
+            GeneratedAt:   TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, NzTz),
             Summary:       sections.GetValueOrDefault("Summary", ""),
             Observations:  sections.GetValueOrDefault("Observations", ""),
             Actions:       sections.GetValueOrDefault("Actions", ""),

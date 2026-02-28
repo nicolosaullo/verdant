@@ -20,8 +20,7 @@ public static class BlogPostPublisher
         var generatedAt  = successful[0].Insight!.GeneratedAt;
         var slug         = generatedAt.ToString("yyyy-MM-dd");
         var friendlyDate = generatedAt.ToString("dddd, d MMMM yyyy");
-        // NZDT (UTC+13) applies Oct–Mar; NZST (UTC+12) applies Apr–Sep
-        var tzLabel      = generatedAt.Month is >= 10 or <= 3 ? "NZDT" : "NZST";
+        var tzLabel      = generatedAt.Offset.Hours == 13 ? "NZDT" : "NZST";
 
         // One H3 block per successful model
         var modelSections = string.Join(
