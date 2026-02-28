@@ -6,16 +6,8 @@ namespace GardenAI;
 /// </summary>
 internal static class GardenInsightParser
 {
-    internal static string BuildPrompt(WeatherForecast forecast, List<GardenBed> beds)
+    internal static string BuildPrompt(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds)
     {
-        var rainNext3Days = forecast.TotalRainNextDays(3);
-        var frostRiskNote = forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "";
-
-        var bedsSection = beds.Count > 0
-            ? "## Garden Beds\n\n" + string.Join("\n\n", beds.Select(FormatBed))
-            : "";
-
-        // Derive current NZ season from today's month
         var season = DateTimeOffset.Now.Month switch
         {
             12 or 1 or 2 => "summer",
@@ -24,44 +16,16 @@ internal static class GardenInsightParser
             _            => "spring"
         };
 
-        return $"""
-            You are an expert gardening assistant with deep knowledge of vegetable growing
-            in maritime climates. Analyse the data below and provide daily insights
-            for a home food garden in Dunedin, New Zealand (45°S, oceanic climate,
-            currently {season}).
+        var bedsSection = beds.Count > 0
+            ? "## Garden Beds\n\n" + string.Join("\n\n", beds.Select(FormatBed))
+            : "";
 
-            {bedsSection}
-
-            ## 7-Day Weather Forecast (Open-Meteo){frostRiskNote}
-            Rain expected in next 3 days: {rainNext3Days:F1}mm
-            {forecast.ToPromptTable()}
-
-            ## Your task
-            Respond in the following EXACT format with these section headers:
-
-            ### Summary
-            A 2-3 sentence plain-English overview of today's garden conditions, written
-            in a warm, conversational tone suitable for a public blog post. Reference
-            the specific plants by name.
-
-            ### Observations
-            3-5 bullet points of specific, data-driven observations about trends,
-            anomalies, or noteworthy patterns based on the forecast data.
-
-            ### Actions
-            Concrete, prioritised actions the gardener should take today or in the
-            next 24 hours. Factor in the weather forecast — if significant rain is
-            coming soon, avoid watering. If a frost is forecast, recommend protection.
-            Tailor advice to the specific plants in the bed.
-
-            ### Forecast Advice
-            1-2 sentences on what to watch for over the next few days, using the
-            weather forecast data to give specific, actionable guidance.
-
-            ### Gardener's Note
-            A short (1-2 sentence) reflective or encouraging note that acknowledges
-            the journey of learning through data. Keep it human and grounded.
-            """;
+        return promptTemplate
+            .Replace("{{SEASON}}",        season)
+            .Replace("{{BEDS}}",          bedsSection)
+            .Replace("{{FROST_NOTE}}",    forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "")
+            .Replace("{{RAIN_3DAY}}",     forecast.TotalRainNextDays(3).ToString("F1"))
+            .Replace("{{FORECAST_TABLE}}", forecast.ToPromptTable());
     }
 
     private static string FormatBed(GardenBed bed)

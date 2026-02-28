@@ -47,6 +47,7 @@ public interface IInsightGenerator
     string ProviderName { get; }
     string ModelName { get; }
     Task<GardenInsight> GenerateInsightAsync(
+        string promptTemplate,
         WeatherForecast forecast,
         List<GardenBed> beds);
 }

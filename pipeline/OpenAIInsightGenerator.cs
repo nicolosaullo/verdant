@@ -11,9 +11,9 @@ public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : II
     public string ProviderName => "OpenAI";
     public string ModelName => model;
 
-    public async Task<GardenInsight> GenerateInsightAsync(WeatherForecast forecast, List<GardenBed> beds)
+    public async Task<GardenInsight> GenerateInsightAsync(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds)
     {
-        var prompt = GardenInsightParser.BuildPrompt(forecast, beds);
+        var prompt = GardenInsightParser.BuildPrompt(promptTemplate, forecast, beds);
         // Only the first bed image is sent to keep token costs down
         var image  = beds.FirstOrDefault(b => b.HasImage);
 

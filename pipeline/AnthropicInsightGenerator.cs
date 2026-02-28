@@ -11,9 +11,9 @@ public class AnthropicInsightGenerator(string apiKey, string model = "claude-opu
     public string ProviderName => "Anthropic";
     public string ModelName => model;
 
-    public async Task<GardenInsight> GenerateInsightAsync(WeatherForecast forecast, List<GardenBed> beds)
+    public async Task<GardenInsight> GenerateInsightAsync(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds)
     {
-        var prompt = GardenInsightParser.BuildPrompt(forecast, beds);
+        var prompt = GardenInsightParser.BuildPrompt(promptTemplate, forecast, beds);
         // Only the first bed image is sent to keep token costs down
         var image  = beds.FirstOrDefault(b => b.HasImage);
 

@@ -12,11 +12,21 @@ var outputDirectory = Environment.GetEnvironmentVariable("POSTS_OUTPUT_DIR")
 var bedsDirectory = Environment.GetEnvironmentVariable("BEDS_CONFIG_DIR")
     ?? "./garden/beds";
 
+var promptFile = Environment.GetEnvironmentVariable("PROMPT_FILE")
+    ?? "./garden/prompt.md";
+
 // ─── Pipeline ─────────────────────────────────────────────────────────────────
 Console.WriteLine("🌱 Garden AI Pipeline starting...\n");
 
-// Step 1: Load bed config and weather forecast in parallel
-Console.WriteLine("📡 Loading bed config and weather forecast...");
+// Step 1: Load prompt template, bed config, and weather forecast
+Console.WriteLine("📡 Loading prompt, bed config, and weather forecast...");
+if (!File.Exists(promptFile))
+{
+    Console.Error.WriteLine($"❌ Prompt file not found: {promptFile}");
+    return 1;
+}
+var promptTemplate = await File.ReadAllTextAsync(promptFile);
+
 var bedsTask     = Task.Run(() => GardenBedLoader.LoadAll(bedsDirectory));
 var forecastTask = WeatherForecastProvider.GetForecastAsync();
 
@@ -68,7 +78,7 @@ var tasks = generators.Select(async g =>
 {
     try
     {
-        var insight = await g.GenerateInsightAsync(forecast, beds);
+        var insight = await g.GenerateInsightAsync(promptTemplate, forecast, beds);
         Console.WriteLine($"   ✅ {g.ProviderName}/{g.ModelName} done");
         return new ProviderInsight(g.ProviderName, g.ModelName, insight);
     }
