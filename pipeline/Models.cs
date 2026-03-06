@@ -1,5 +1,12 @@
 namespace GardenAI;
 
+/// <summary>Shared timezone for all NZ date/time conversions (works on both Windows and Linux).</summary>
+public static class GardenConfig
+{
+    public static readonly TimeZoneInfo NzTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("Pacific/Auckland");
+}
+
 public record GardenInsight(
     DateTimeOffset GeneratedAt,
     string Summary,
@@ -48,13 +55,43 @@ public record DaylightInfo(
     double DayLengthHours
 )
 {
-    /// <summary>Local NZST/NZDT time strings for display.</summary>
-    private static readonly TimeZoneInfo Nzt =
-        TimeZoneInfo.FindSystemTimeZoneById("New Zealand Standard Time");
-
-    public string SunriseLocal => TimeZoneInfo.ConvertTime(SunriseUtc, Nzt).ToString("h:mm tt");
-    public string SunsetLocal  => TimeZoneInfo.ConvertTime(SunsetUtc,  Nzt).ToString("h:mm tt");
+    public string SunriseLocal => TimeZoneInfo.ConvertTime(SunriseUtc, GardenConfig.NzTimeZone).ToString("h:mm tt");
+    public string SunsetLocal  => TimeZoneInfo.ConvertTime(SunsetUtc,  GardenConfig.NzTimeZone).ToString("h:mm tt");
 };
+
+// ─── Ecowitt sensor records ──────────────────────────────────────────────────
+
+public record SensorSnapshot(
+    DateTimeOffset CapturedAt,
+    OutdoorReading? Outdoor,
+    List<SoilReading> SoilChannels,
+    WindReading? Wind,
+    RainfallReading? Rainfall,
+    SolarReading? Solar,
+    IndoorReading? Indoor,
+    PressureReading? Pressure);
+
+public record DailyHistoryRow(
+    string Date,
+    double? TempMinC,
+    double? TempMaxC,
+    double? TempAvgC,
+    double? HumidityMin,
+    double? HumidityMax,
+    double? SoilMoistureMin,
+    double? SoilMoistureMax);
+
+public record SensorHistory(List<DailyHistoryRow> Days);
+
+public record OutdoorReading(double? TemperatureC, double? Humidity, double? FeelsLikeC, double? DewPointC);
+public record SoilReading(int Channel, double? MoisturePct);
+public record WindReading(double? SpeedKph, double? GustKph, double? DirectionDeg);
+public record RainfallReading(double? RatePerHour, double? DailyMm);
+public record SolarReading(double? RadiationWm2, double? UvIndex);
+public record IndoorReading(double? TemperatureC, double? Humidity);
+public record PressureReading(double? RelativeHpa, double? AbsoluteHpa);
+
+// ─── Insight generator interface ─────────────────────────────────────────────
 
 public interface IInsightGenerator
 {
@@ -64,5 +101,7 @@ public interface IInsightGenerator
         string promptTemplate,
         WeatherForecast forecast,
         List<GardenBed> beds,
-        DaylightInfo? daylight = null);
+        DaylightInfo? daylight = null,
+        SensorSnapshot? sensors = null,
+        SensorHistory? history = null);
 }

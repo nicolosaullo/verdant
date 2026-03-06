@@ -12,7 +12,7 @@ public static class BlogPostPublisher
     /// <summary>
     /// Generates a comparison Markdown post covering every model that responded.
     /// </summary>
-    public static string GenerateMarkdown(WeatherForecast forecast, IEnumerable<ProviderInsight> results, DaylightInfo? daylight = null)
+    public static string GenerateMarkdown(WeatherForecast forecast, IEnumerable<ProviderInsight> results, DaylightInfo? daylight = null, SensorSnapshot? sensors = null)
     {
         var all        = results.ToList();
         var successful = all.Where(r => r.Succeeded).ToList();
@@ -46,12 +46,12 @@ public static class BlogPostPublisher
 
             # Garden Update — {friendlyDate}
 
-            > *Daily insights generated from weather forecast data and compared across {all.Count} AI models: {modelList}.*
-            > *Weather data from [Open-Meteo](https://open-meteo.com) · Dunedin, NZ*
+            > *Daily insights generated from live sensor and weather data{(all.Count > 1 ? $", compared across {all.Count} AI models" : $", powered by {modelList}")}.*
+            > *Sensor data from Ecowitt GW1200 · Weather from [Open-Meteo](https://open-meteo.com) · Dunedin, NZ*
 
             ---
 
-            ### 7-Day Weather Forecast{(forecast.IsFrostRisk ? " — ⚠️ Frost risk in next 3 days" : "")}
+            {(sensors is not null ? FormatSensorTable(sensors) : "")}### 7-Day Weather Forecast{(forecast.IsFrostRisk ? " — ⚠️ Frost risk in next 3 days" : "")}
 
             {(daylight is not null ? $"> 🌅 Sunrise: {daylight.SunriseLocal} · Sunset: {daylight.SunsetLocal} · Day length: **{daylight.DayLengthHours:F1} hrs**\n\n" : "")}| Date | Max | Min | Rain | Rain% | Wind | UV | ET₀ | Radiation |
             |------|-----|-----|------|-------|------|-----|------|-----------|
@@ -99,11 +99,54 @@ public static class BlogPostPublisher
             """;
     }
 
+    private static string FormatSensorTable(SensorSnapshot s)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("### Live Sensor Readings (Ecowitt)");
+        sb.AppendLine();
+        sb.AppendLine("| Sensor | Value |");
+        sb.AppendLine("|--------|-------|");
+
+        if (s.Outdoor is { } o)
+        {
+            sb.AppendLine($"| Outdoor temp | {V(o.TemperatureC, "°C")} (feels like {V(o.FeelsLikeC, "°C")}) |");
+            sb.AppendLine($"| Outdoor humidity | {V(o.Humidity, "%", "F0")} |");
+            sb.AppendLine($"| Dew point | {V(o.DewPointC, "°C")} |");
+        }
+
+        foreach (var soil in s.SoilChannels)
+            sb.AppendLine($"| Soil moisture (ch{soil.Channel}) | {V(soil.MoisturePct, "%", "F0")} |");
+
+        if (s.Wind is { } w)
+            sb.AppendLine($"| Wind | {V(w.SpeedKph, " km/h")} (gusts {V(w.GustKph, " km/h")}) |");
+
+        if (s.Rainfall is { } r)
+            sb.AppendLine($"| Rain today | {V(r.DailyMm, "mm")} |");
+
+        if (s.Solar is { } sol)
+        {
+            sb.AppendLine($"| Solar radiation | {V(sol.RadiationWm2, " W/m²", "F0")} |");
+            sb.AppendLine($"| UV index | {V(sol.UvIndex, "", "F0")} |");
+        }
+
+        if (s.Pressure is { } p)
+            sb.AppendLine($"| Pressure | {V(p.RelativeHpa, " hPa")} |");
+
+        static string V(double? v, string unit, string fmt = "F1") =>
+            v.HasValue ? $"{v.Value.ToString(fmt)}{unit}" : "n/a";
+
+        sb.AppendLine();
+        sb.AppendLine("---");
+        sb.AppendLine();
+        return sb.ToString();
+    }
+
     public static async Task SavePostAsync(
         WeatherForecast forecast,
         IEnumerable<ProviderInsight> results,
         string outputDirectory,
-        DaylightInfo? daylight = null)
+        DaylightInfo? daylight = null,
+        SensorSnapshot? sensors = null)
     {
         var successful = results.Where(r => r.Succeeded).ToList();
         if (successful.Count == 0)
@@ -112,7 +155,7 @@ public static class BlogPostPublisher
         Directory.CreateDirectory(outputDirectory);
         var date     = successful[0].Insight!.GeneratedAt;
         var filename = Path.Combine(outputDirectory, $"{date:yyyy-MM-dd}.md");
-        var markdown = GenerateMarkdown(forecast, results, daylight);
+        var markdown = GenerateMarkdown(forecast, results, daylight, sensors);
         await File.WriteAllTextAsync(filename, markdown);
         Console.WriteLine($"✅ Blog post saved: {filename}");
     }

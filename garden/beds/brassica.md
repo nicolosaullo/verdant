@@ -4,6 +4,7 @@ location: Port Chalmers, NZ
 area_sqm: 3.74
 sun: partial shade
 soil: compost incorporated Feb 2026
+channels: 1
 ---
 
 ## What's Planted
@@ -31,7 +32,7 @@ soil: compost incorporated Feb 2026
 
 ## Care Notes
 
-- No soil sensors installed yet.
+- Soil moisture sensor on channel 1 (WH51).
 - Monitor weekly for cabbage white butterfly eggs (yellow clusters on leaf undersides). Consider fine mesh netting.
 - Watch growing tips for aphids as temperatures cool into autumn.
 - Side Sprouter broccoli: harvest side shoots regularly after main head to extend season.

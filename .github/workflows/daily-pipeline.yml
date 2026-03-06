@@ -27,8 +27,11 @@ jobs:
 
       - name: Run Garden AI Pipeline
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          OPENAI_API_KEY:    ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY:        ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY:            ${{ secrets.OPENAI_API_KEY }}
+          ECOWITT_APPLICATION_KEY:   ${{ secrets.ECOWITT_APPLICATION_KEY }}
+          ECOWITT_API_KEY:           ${{ secrets.ECOWITT_API_KEY }}
+          ECOWITT_MAC:               ${{ secrets.ECOWITT_MAC }}
           # Relative to repo root — where dotnet run is invoked
           POSTS_OUTPUT_DIR:  ./site/src/content/posts
           BEDS_CONFIG_DIR:   ./garden/beds
