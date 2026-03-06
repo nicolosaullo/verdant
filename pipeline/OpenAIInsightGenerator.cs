@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace GardenAI;
 
-public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : IInsightGenerator
+public class OpenAIInsightGenerator(string apiKey, string model = "gpt-5.4") : IInsightGenerator
 {
     private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(3) };
     private const string ApiUrl = "https://api.openai.com/v1/chat/completions";
@@ -11,9 +11,9 @@ public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : II
     public string ProviderName => "OpenAI";
     public string ModelName => model;
 
-    public async Task<GardenInsight> GenerateInsightAsync(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds, DaylightInfo? daylight = null, SensorSnapshot? sensors = null, SensorHistory? history = null)
+    public async Task<GardenInsight> GenerateInsightAsync(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds, DaylightInfo? daylight = null, SensorSnapshot? sensors = null, SensorHistory? history = null, WeatherHistory? weatherHistory = null)
     {
-        var prompt = GardenInsightParser.BuildPrompt(promptTemplate, forecast, beds, daylight, sensors, history);
+        var prompt = GardenInsightParser.BuildPrompt(promptTemplate, forecast, beds, daylight, sensors, history, weatherHistory);
         // Only the first bed image is sent to keep token costs down
         var image  = beds.FirstOrDefault(b => b.HasImage);
 

@@ -103,5 +103,6 @@ public interface IInsightGenerator
         List<GardenBed> beds,
         DaylightInfo? daylight = null,
         SensorSnapshot? sensors = null,
-        SensorHistory? history = null);
+        SensorHistory? history = null,
+        WeatherHistory? weatherHistory = null);
 }
