@@ -2,7 +2,7 @@ name: Daily Garden AI Pipeline
 
 on:
   schedule:
-    - cron: '0 20 * * *'   # 8 am NZST (UTC+12) = 20:00 UTC
+    - cron: '0 18 * * *' # 8 am NZST (UTC+12) = 18:00 UTC
   workflow_dispatch:         # manual runs from the Actions tab
 
 permissions:
