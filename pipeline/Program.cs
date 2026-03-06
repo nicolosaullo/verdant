@@ -85,7 +85,7 @@ else
 
 if (openAiApiKey is not null)
 {
-    generators.Add(new OpenAIInsightGenerator(openAiApiKey, "gpt-4o"));
+    generators.Add(new OpenAIInsightGenerator(openAiApiKey, "gpt-5.4"));
 }
 else
     Console.WriteLine("⚠️  OPENAI_API_KEY not set — skipping OpenAI models.\n");

@@ -30,11 +30,12 @@ public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : II
             }
             : (object)prompt;
 
-        var requestBody = new
+        // GPT-5+ models require max_completion_tokens instead of max_tokens
+        var requestBody = new Dictionary<string, object>
         {
-            model,
-            max_tokens = 1500,
-            messages   = new[] { new { role = "user", content } }
+            ["model"] = model,
+            ["max_completion_tokens"] = 1500,
+            ["messages"] = new[] { new { role = "user", content } }
         };
 
         using var request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
