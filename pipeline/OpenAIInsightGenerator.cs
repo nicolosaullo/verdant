@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace GardenAI;
 
-public class OpenAIInsightGenerator(string apiKey, string model = "gpt-4o") : IInsightGenerator
+public class OpenAIInsightGenerator(string apiKey, string model = "gpt-5.4") : IInsightGenerator
 {
     private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(3) };
     private const string ApiUrl = "https://api.openai.com/v1/chat/completions";
