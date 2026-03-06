@@ -31,9 +31,10 @@ if (!File.Exists(promptFile))
 }
 var promptTemplate = await File.ReadAllTextAsync(promptFile);
 
-var bedsTask     = Task.Run(() => GardenBedLoader.LoadAll(bedsDirectory));
-var forecastTask = WeatherForecastProvider.GetForecastAsync();
-var daylightTask = DaylightProvider.GetDaylightAsync();
+var bedsTask           = Task.Run(() => GardenBedLoader.LoadAll(bedsDirectory));
+var forecastTask       = WeatherForecastProvider.GetForecastAsync();
+var daylightTask       = DaylightProvider.GetDaylightAsync();
+var weatherHistoryTask = WeatherHistoryProvider.GetHistoryAsync();
 var hasEcowitt = ecowittAppKey is not null && ecowittApiKey is not null && ecowittMac is not null;
 var sensorsTask = hasEcowitt
     ? EcowittSensorProvider.GetSensorDataAsync(ecowittAppKey!, ecowittApiKey!, ecowittMac!)
@@ -42,13 +43,14 @@ var historyTask = hasEcowitt
     ? EcowittSensorProvider.GetHistoryAsync(ecowittAppKey!, ecowittApiKey!, ecowittMac!)
     : Task.FromResult<SensorHistory?>(null);
 
-await Task.WhenAll(bedsTask, forecastTask, daylightTask, sensorsTask, historyTask);
+await Task.WhenAll(bedsTask, forecastTask, daylightTask, weatherHistoryTask, sensorsTask, historyTask);
 
-var beds     = bedsTask.Result;
-var forecast = forecastTask.Result;
-var daylight = daylightTask.Result;
-var sensors  = sensorsTask.Result;
-var history  = historyTask.Result;
+var beds           = bedsTask.Result;
+var forecast       = forecastTask.Result;
+var daylight       = daylightTask.Result;
+var weatherHistory = weatherHistoryTask.Result;
+var sensors        = sensorsTask.Result;
+var history        = historyTask.Result;
 
 if (beds.Count > 0)
     Console.WriteLine($"   Beds loaded: {string.Join(", ", beds.Select(b => $"{b.Name}" + (b.HasImage ? " 📷" : "")))}");
@@ -58,6 +60,8 @@ else
 Console.WriteLine($"   Forecast: {forecast.TotalRainNextDays(3):F1}mm rain in next 3 days" +
                   (forecast.IsFrostRisk ? ", ⚠️ frost risk" : "") +
                   (daylight is not null ? $", day length: {daylight.DayLengthHours:F1}h" : "") + "\n");
+if (weatherHistory.Days.Count > 0)
+    Console.WriteLine($"   Weather history: {weatherHistory.Days.Count} day(s) of actual weather data");
 
 if (sensors is not null)
 {
@@ -105,7 +109,7 @@ var tasks = generators.Select(async g =>
 {
     try
     {
-        var insight = await g.GenerateInsightAsync(promptTemplate, forecast, beds, daylight, sensors, history);
+        var insight = await g.GenerateInsightAsync(promptTemplate, forecast, beds, daylight, sensors, history, weatherHistory);
         Console.WriteLine($"   ✅ {g.ProviderName}/{g.ModelName} done");
         return new ProviderInsight(g.ProviderName, g.ModelName, insight);
     }

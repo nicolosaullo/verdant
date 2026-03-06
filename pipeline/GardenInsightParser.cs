@@ -8,7 +8,7 @@ internal static class GardenInsightParser
 {
     private static TimeZoneInfo NzTz => GardenConfig.NzTimeZone;
 
-    internal static string BuildPrompt(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds, DaylightInfo? daylight = null, SensorSnapshot? sensors = null, SensorHistory? history = null)
+    internal static string BuildPrompt(string promptTemplate, WeatherForecast forecast, List<GardenBed> beds, DaylightInfo? daylight = null, SensorSnapshot? sensors = null, SensorHistory? history = null, WeatherHistory? weatherHistory = null)
     {
         var season = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, NzTz).Month switch
         {
@@ -35,17 +35,19 @@ internal static class GardenInsightParser
 
         var sensorSection = sensors is not null ? FormatSensors(sensors) : "No live sensor data available.";
         var historySection = history is { Days.Count: > 0 } ? FormatHistory(history) : "No historical sensor data available yet.";
+        var weatherHistorySection = weatherHistory is { Days.Count: > 0 } ? weatherHistory.ToPromptTable() : "No historical weather data available yet.";
 
         return promptTemplate
-            .Replace("{{SEASON}}",         season)
-            .Replace("{{BEDS}}",           bedsSection)
-            .Replace("{{FROST_NOTE}}",     forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "")
-            .Replace("{{RAIN_3DAY}}",      forecast.TotalRainNextDays(3).ToString("F1"))
-            .Replace("{{FORECAST_TABLE}}", forecast.ToPromptTable())
-            .Replace("{{DAYLIGHT}}",       daylightSection)
-            .Replace("{{ET0_TODAY}}",      et0Section)
-            .Replace("{{SENSORS}}",        sensorSection)
-            .Replace("{{SENSOR_HISTORY}}", historySection);
+            .Replace("{{SEASON}}",          season)
+            .Replace("{{BEDS}}",            bedsSection)
+            .Replace("{{FROST_NOTE}}",      forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "")
+            .Replace("{{RAIN_3DAY}}",       forecast.TotalRainNextDays(3).ToString("F1"))
+            .Replace("{{FORECAST_TABLE}}",  forecast.ToPromptTable())
+            .Replace("{{DAYLIGHT}}",        daylightSection)
+            .Replace("{{ET0_TODAY}}",       et0Section)
+            .Replace("{{SENSORS}}",         sensorSection)
+            .Replace("{{SENSOR_HISTORY}}",  historySection)
+            .Replace("{{WEATHER_HISTORY}}", weatherHistorySection);
     }
 
     private static string FormatBed(GardenBed bed, SensorSnapshot? sensors)
