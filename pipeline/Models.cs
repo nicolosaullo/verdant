@@ -12,7 +12,9 @@ public record GardenInsight(
     string Summary,
     string Observations,
     string Actions,
+    string VarietyWatch,
     string ForecastAdvice,
+    string Horticulture,
     string GardenersNote,
     string RawResponse
 );

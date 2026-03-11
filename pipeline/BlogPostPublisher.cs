@@ -78,6 +78,13 @@ public static class BlogPostPublisher
         var emoji   = ProviderEmoji.GetValueOrDefault(result.ProviderName, "🔵");
         var insight = result.Insight!;
 
+        var varietyWatch = !string.IsNullOrWhiteSpace(insight.VarietyWatch)
+            ? $"\n**Variety Watch**\n\n{insight.VarietyWatch}\n"
+            : "";
+        var horticulture = !string.IsNullOrWhiteSpace(insight.Horticulture)
+            ? $"\n**Horticulture**\n\n{insight.Horticulture}\n"
+            : "";
+
         return $"""
             ### {emoji} {result.ProviderName} — `{result.ModelName}`
 
@@ -90,11 +97,11 @@ public static class BlogPostPublisher
             **Actions for Today**
 
             {insight.Actions}
-
+            {varietyWatch}
             **Looking Ahead**
 
             {insight.ForecastAdvice}
-
+            {horticulture}
             *{insight.GardenersNote}*
             """;
     }

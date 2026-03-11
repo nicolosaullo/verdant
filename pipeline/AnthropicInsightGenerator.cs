@@ -38,7 +38,7 @@ public class AnthropicInsightGenerator(string apiKey, string model = "claude-opu
         var requestBody = new
         {
             model,
-            max_tokens = 1500,
+            max_tokens = 4000,
             messages   = new[] { new { role = "user", content } }
         };
 

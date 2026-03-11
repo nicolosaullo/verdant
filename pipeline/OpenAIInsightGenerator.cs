@@ -34,7 +34,7 @@ public class OpenAIInsightGenerator(string apiKey, string model = "gpt-5.4") : I
         var requestBody = new Dictionary<string, object>
         {
             ["model"] = model,
-            ["max_completion_tokens"] = 1500,
+            ["max_completion_tokens"] = 4000,
             ["messages"] = new[] { new { role = "user", content } }
         };
 

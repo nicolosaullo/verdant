@@ -165,7 +165,9 @@ internal static class GardenInsightParser
             Summary:       sections.GetValueOrDefault("Summary", ""),
             Observations:  sections.GetValueOrDefault("Observations", ""),
             Actions:       sections.GetValueOrDefault("Actions", ""),
+            VarietyWatch:  sections.GetValueOrDefault("Variety Watch", ""),
             ForecastAdvice: sections.GetValueOrDefault("Forecast Advice", ""),
+            Horticulture:  sections.GetValueOrDefault("Horticulture", ""),
             GardenersNote: sections.GetValueOrDefault("Gardener's Note", ""),
             RawResponse:   rawText
         );
