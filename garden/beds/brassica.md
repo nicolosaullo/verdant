@@ -30,6 +30,15 @@ channels: 1
 
 4 columns × 3 rows, ~55 cm spacing. Cauliflowers at the north (front/sunniest) edge. Broccoli at the south (back) to avoid shading other plants.
 
+## Maintenance Log
+
+| Date | Action |
+|---|---|
+| 2026-02-28 | Netting applied (fine insect mesh, full bed coverage) |
+| 2026-02-28 | Fed with Tui Seaweed Plant Tonic (establishment dose) |
+
+Mulch: none applied yet.
+
 ## Care Notes
 
 - Soil moisture sensor on channel 1 (WH51).
@@ -38,6 +47,7 @@ channels: 1
 - Side Sprouter broccoli: harvest side shoots regularly after main head to extend season.
 - Blanch cauliflower heads by folding outer leaves over when curds form.
 - Do not replant brassicas in this bed for at least 2 years — clubroot prevention.
+
 
 ## Expected Harvest
 

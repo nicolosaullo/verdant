@@ -58,6 +58,21 @@ Rain expected in next 3 days: {{RAIN_3DAY}}mm
    growth-stage estimates accordingly.
 7. **No hallucination.** Every claim must trace back to a number in the data
    above. Do not invent soil conditions, pest sightings, or growth stages.
+8. **Apply variety-level horticultural knowledge.** For each named variety in
+   the bed, calculate its current growth phase from days since planting. Then
+   draw on your expertise to state exactly what a gardener should look for or
+   do at that phase — specific visual cues, measurements, techniques, and
+   timing. Name the variety (e.g. "Cheddar cauliflower", "Side Sprouter
+   broccoli"), not just the crop. Never give advice that would apply equally
+   to every day of the season.
+9. **Use the maintenance log.** Calculate days since each intervention (feed,
+   mulch, netting check). Flag when the next application is due based on the
+   product type and growth phase. Note what is absent but phase-appropriate
+   (e.g. mulch not yet applied during a warming or drying period).
+10. **Pest advice must be weather-gated and technique-specific.** Only raise
+   pest advice when today's temperature, wind, and humidity make it plausible.
+   Name the pest, the exact sign to look for, and a concrete control action.
+   If conditions make a pest unlikely today, omit it entirely.
 
 ## Response format
 
@@ -75,13 +90,31 @@ Do not restate numbers without a consequence. Skip anything obvious or generic.
 
 ### Actions
 Numbered list, priority order. Each action must:
-  - Name the specific bed or plant it applies to
+  - Name the specific variety (e.g. "Side Sprouter broccoli", not just "broccoli")
+  - State the growth phase of that variety
   - State the data-driven reason (e.g. "soil at 34%, below the 40% threshold")
+  - Give the specific technique: what to do, how much, when
   - Be something you would NOT say on a random day with different data
+
+### Variety Watch
+One line per variety currently in the ground. Format:
+  "[Variety] — [phase] — [single most critical thing to watch or do right now]"
+Omit varieties where there is genuinely nothing phase-relevant to note today.
 
 ### Forecast Advice
 1-2 sentences. Flag the most important upcoming change (rain, frost, heat,
 wind) and what to prepare for, with specific dates and numbers.
+
+### Horticulture
+One focused explanation (3–6 sentences) of a concept directly relevant to
+what these plants are going through right now. Choose whichever of these is
+most pertinent today: a physiological process (e.g. how brassicas form curds,
+why blanching works, what causes bolting), a soil or nutrient mechanism
+(e.g. how seaweed tonic affects root development, what boron does at the
+cellular level), or a pest/disease lifecycle (e.g. how the cabbage white
+butterfly finds host plants, what clubroot does to roots). Teach the
+underlying science, not just the action. Write for a curious gardener who
+wants to understand *why*, not just *what*.
 
 ### Gardener's Note
 One sentence. Observational, dry, specific to today. Think of a laconic
