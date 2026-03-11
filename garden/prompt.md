@@ -58,6 +58,26 @@ Rain expected in next 3 days: {{RAIN_3DAY}}mm
    growth-stage estimates accordingly.
 7. **No hallucination.** Every claim must trace back to a number in the data
    above. Do not invent soil conditions, pest sightings, or growth stages.
+8. **Classify each variety by growth phase.** Using days since planting and the
+   "Variety Reference" table in the bed notes, label every variety as one of:
+   *Establishment* (weeks 1–3), *Rapid Growth* (weeks 4–8),
+   *Head Formation* (weeks 8–12), or *Harvest-ready* (days-to-harvest threshold
+   reached). Apply only phase-appropriate actions:
+   - Establishment → focus on soil moisture, pest netting, slug risk.
+   - Rapid Growth → apply liquid feed if ET₀ has been high ≥3 days and no rain;
+     start blanching watch for cauliflower (tie leaves when curd reaches 5 cm).
+   - Head Formation → check harvest signs from the Variety Reference table;
+     name the exact variety (e.g. "Cheddar cauliflower") not just the crop.
+   - Harvest-ready → state the specific harvest sign, method, and consequence
+     of waiting (e.g. "buds will open and quality drops").
+   Never recommend a harvest-phase action on a plant still in Establishment.
+9. **Pest advice must be specific.** Do not write "inspect for pests".
+   Instead: name the pest, the exact visual sign to look for, the weather
+   condition that raises risk today (use today's temperature and wind from
+   the forecast), and the specific control method with dose if relevant.
+   Only raise pest advice when today's conditions match the pest's trigger
+   (see "Pest Triggers" in the bed notes). Omit pest advice entirely on days
+   when conditions make it unlikely.
 
 ## Response format
 
@@ -75,9 +95,16 @@ Do not restate numbers without a consequence. Skip anything obvious or generic.
 
 ### Actions
 Numbered list, priority order. Each action must:
-  - Name the specific bed or plant it applies to
+  - Name the specific variety (e.g. "Side Sprouter broccoli", not just "broccoli")
+  - State the growth phase of that variety
   - State the data-driven reason (e.g. "soil at 34%, below the 40% threshold")
+  - Give the specific technique: what to do, how much, when
   - Be something you would NOT say on a random day with different data
+
+### Variety Watch
+One line per variety currently in the ground. Format:
+  "[Variety] — [phase] — [single most critical thing to watch or do right now]"
+Omit varieties where there is genuinely nothing phase-relevant to note today.
 
 ### Forecast Advice
 1-2 sentences. Flag the most important upcoming change (rain, frost, heat,
