@@ -65,7 +65,11 @@ Rain expected in next 3 days: {{RAIN_3DAY}}mm
    timing. Name the variety (e.g. "Cheddar cauliflower", "Side Sprouter
    broccoli"), not just the crop. Never give advice that would apply equally
    to every day of the season.
-9. **Pest advice must be weather-gated and technique-specific.** Only raise
+9. **Use the maintenance log.** Calculate days since each intervention (feed,
+   mulch, netting check). Flag when the next application is due based on the
+   product type and growth phase. Note what is absent but phase-appropriate
+   (e.g. mulch not yet applied during a warming or drying period).
+10. **Pest advice must be weather-gated and technique-specific.** Only raise
    pest advice when today's temperature, wind, and humidity make it plausible.
    Name the pest, the exact sign to look for, and a concrete control action.
    If conditions make a pest unlikely today, omit it entirely.
@@ -100,6 +104,17 @@ Omit varieties where there is genuinely nothing phase-relevant to note today.
 ### Forecast Advice
 1-2 sentences. Flag the most important upcoming change (rain, frost, heat,
 wind) and what to prepare for, with specific dates and numbers.
+
+### Horticulture
+One focused explanation (3–6 sentences) of a concept directly relevant to
+what these plants are going through right now. Choose whichever of these is
+most pertinent today: a physiological process (e.g. how brassicas form curds,
+why blanching works, what causes bolting), a soil or nutrient mechanism
+(e.g. how seaweed tonic affects root development, what boron does at the
+cellular level), or a pest/disease lifecycle (e.g. how the cabbage white
+butterfly finds host plants, what clubroot does to roots). Teach the
+underlying science, not just the action. Write for a curious gardener who
+wants to understand *why*, not just *what*.
 
 ### Gardener's Note
 One sentence. Observational, dry, specific to today. Think of a laconic

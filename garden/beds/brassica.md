@@ -30,6 +30,15 @@ channels: 1
 
 4 columns × 3 rows, ~55 cm spacing. Cauliflowers at the north (front/sunniest) edge. Broccoli at the south (back) to avoid shading other plants.
 
+## Maintenance Log
+
+| Date | Action |
+|---|---|
+| 2026-02-28 | Netting applied (fine insect mesh, full bed coverage) |
+| 2026-02-28 | Fed with Tui Seaweed Plant Tonic (establishment dose) |
+
+Mulch: none applied yet.
+
 ## Care Notes
 
 - Soil moisture sensor on channel 1 (WH51).
