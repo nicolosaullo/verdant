@@ -36,6 +36,7 @@ channels: 1
 |---|---|
 | 2026-02-28 | Netting applied (fine insect mesh, full bed coverage) |
 | 2026-02-28 | Fed with Tui Seaweed Plant Tonic (establishment dose) |
+| 2026-03-12 | Mulched bed with Comfrey leaves |
 
 Mulch: none applied yet.
 
