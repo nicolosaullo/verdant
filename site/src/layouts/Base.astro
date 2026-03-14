@@ -23,12 +23,17 @@ const base = import.meta.env.BASE_URL;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <title>{title} — Verdant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
   </head>
   <body>
     <header class="site-header">
       <div class="container">
-        <a href={base} class="site-title">🌱 Verdant</a>
-        <p class="site-tagline">A data-driven Dunedin garden</p>
+        <div class="site-header-inner">
+          <a href={base} class="site-title">Verdant</a>
+          <p class="site-tagline">Port Chalmers · 45°S 170°E · Dunedin, NZ</p>
+        </div>
       </div>
     </header>
 

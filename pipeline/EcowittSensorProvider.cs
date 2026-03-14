@@ -194,7 +194,7 @@ public static class EcowittSensorProvider
 
             var dt = DateTimeOffset.FromUnixTimeSeconds(epoch);
             var local = TimeZoneInfo.ConvertTime(dt, NzTz);
-            var day = local.ToString("yyyy-MM-dd");
+            var day = local.ToString("dd/MM");
 
             if (!result.ContainsKey(day))
                 result[day] = [];

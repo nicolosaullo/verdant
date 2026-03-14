@@ -44,8 +44,6 @@ public static class BlogPostPublisher
             tags: [garden, weather, ai-insights]
             ---
 
-            # Garden Update — {friendlyDate}
-
             > *Daily insights generated from live sensor and weather data{(all.Count > 1 ? $", compared across {all.Count} AI models" : $", powered by {modelList}")}.*
             > *Sensor data from Ecowitt GW1200 · Weather from [Open-Meteo](https://open-meteo.com) · Dunedin, NZ*
 

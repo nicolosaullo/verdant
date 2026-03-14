@@ -6,30 +6,60 @@ const posts = (await getCollection('posts'))
   .sort((a, b) => b.data.date.localeCompare(a.data.date));
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const formatDate = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${day} ${months[month - 1]} ${year}`;
+};
 ---
 
 <Base title="Garden Updates">
-  <section class="post-list">
-    <h1 class="page-title">Garden Updates</h1>
-    <p class="page-subtitle">
-      Daily insights from soil moisture, temperature, and humidity sensors —
-      compared across Claude and GPT models each morning.
-    </p>
+  <div class="index-grid">
 
-    {posts.length === 0 ? (
-      <p class="no-posts">No posts yet. The pipeline runs daily at 8 am NZST.</p>
-    ) : (
-      <ul class="posts">
-        {posts.map(post => (
-          <li class="post-item">
-            <a href={`${base}/posts/${post.slug}`} class="post-link">
-              <time class="post-item-date">{post.data.date}</time>
-              <h2 class="post-item-title">{post.data.title}</h2>
-              <p class="post-item-desc">{post.data.description}</p>
-            </a>
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
+    <section class="index-log">
+      <p class="section-label">Field Log</p>
+      {posts.length === 0 ? (
+        <p class="no-posts">No entries yet. Pipeline runs daily at 8 am NZST.</p>
+      ) : (
+        <ul class="posts">
+          {posts.map(post => (
+            <li class="post-item">
+              <a href={`${base}/posts/${post.slug}`} class="post-link">{formatDate(post.data.date)}</a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <aside class="index-sidebar">
+
+      <div class="sidebar-block">
+        <p class="section-label">About</p>
+        <p class="sidebar-text">Daily reports for a 3.74 m² brassica bed. Live sensor data from an Ecowitt GW1200 is merged with Open-Meteo forecasts and passed to AI models each morning at 8 am NZST.</p>
+      </div>
+
+      <div class="sidebar-block">
+        <p class="section-label">Currently Planted</p>
+        <table class="planted-table">
+          <tbody>
+            <tr><td class="planted-crop">Broccoli</td><td class="planted-varieties">Green Dragon, Purple, Side Sprouter</td></tr>
+            <tr><td class="planted-crop">Cauliflower</td><td class="planted-varieties">White, Cheddar, Violet</td></tr>
+            <tr><td class="planted-crop">Cabbage</td><td class="planted-varieties">Lion Heart, Dutch Red, Cannonball</td></tr>
+          </tbody>
+        </table>
+        <p class="planted-meta">Planted 28 Feb 2026 · Harvest May–Jul 2026</p>
+      </div>
+
+      <div class="sidebar-block">
+        <p class="section-label">Prompt Changelog</p>
+        <ul class="changelog">
+          <li><span class="changelog-date">14/03</span>Forecast discrepancy detection — model flags when actuals diverge from predictions</li>
+          <li><span class="changelog-date">14/03</span>Reasoning rules anchored before data; forced action chain format; moisture balance calculation; Variety Watch capped at 5</li>
+          <li><span class="changelog-date">14/03</span>Actions split from non-actions; Horticulture science-only; Variety Watch groups by crop; third-person Summary</li>
+        </ul>
+      </div>
+
+    </aside>
+  </div>
 </Base>

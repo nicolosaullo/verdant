@@ -33,11 +33,13 @@ internal static class GardenInsightParser
             ? $"Today's ET₀: {today.Et0Mm:F1}mm, solar radiation: {today.ShortwaveRadiationMjm2:F1} MJ/m²."
             : "";
 
+        var todayDate = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, NzTz).ToString("dd/MM/yyyy");
         var sensorSection = sensors is not null ? FormatSensors(sensors) : "No live sensor data available.";
         var historySection = history is { Days.Count: > 0 } ? FormatHistory(history) : "No historical sensor data available yet.";
         var weatherHistorySection = weatherHistory is { Days.Count: > 0 } ? weatherHistory.ToPromptTable() : "No historical weather data available yet.";
 
         return promptTemplate
+            .Replace("{{TODAY}}",           todayDate)
             .Replace("{{SEASON}}",          season)
             .Replace("{{BEDS}}",            bedsSection)
             .Replace("{{FROST_NOTE}}",      forecast.IsFrostRisk ? " ⚠️ Frost risk in next 3 days." : "")

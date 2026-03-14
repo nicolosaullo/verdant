@@ -36,7 +36,7 @@ public static class WeatherForecastProvider
             var radiation = daily.GetProperty("shortwave_radiation_sum").EnumerateArray().Select(e => e.GetDouble()).ToArray();
 
             var days = dates.Select((date, i) => new ForecastDay(
-                Date:                    date,
+                Date:                    DateOnly.ParseExact(date, "yyyy-MM-dd").ToString("dd/MM"),
                 TempMaxCelsius:          tempMax[i],
                 TempMinCelsius:          tempMin[i],
                 PrecipitationMm:         rain[i],
