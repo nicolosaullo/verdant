@@ -133,12 +133,15 @@ main.container { flex: 1; padding-top: 2.5rem; padding-bottom: 4rem; }
 
 .post-item {
   border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
 }
 
 .post-item:first-child { border-top: 1px solid var(--rule); }
 
 .post-item a.post-link {
-  display: block;
+  flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: 0.875rem;
   color: var(--text);
@@ -148,6 +151,16 @@ main.container { flex: 1; padding-top: 2.5rem; padding-bottom: 4rem; }
 }
 
 .post-item a.post-link:hover { color: var(--accent); }
+
+.post-summary {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
 
 .no-posts {
   font-family: var(--font-mono);

@@ -164,6 +164,7 @@ internal static class GardenInsightParser
 
         return new GardenInsight(
             GeneratedAt:   TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, NzTz),
+            Teaser:        sections.GetValueOrDefault("Teaser", ""),
             Summary:       sections.GetValueOrDefault("Summary", ""),
             Observations:  sections.GetValueOrDefault("Observations", ""),
             Actions:       sections.GetValueOrDefault("Actions", ""),

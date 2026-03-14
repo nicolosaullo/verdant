@@ -115,6 +115,13 @@ Rain expected in next 3 days: {{RAIN_3DAY}}mm
 
 Use these EXACT section headers. No preamble, no greeting.
 
+### Teaser
+One short phrase or sentence — title-like and poetic, under 80 characters.
+Capture today's essential tension or moment in the garden. Be specific: name
+a crop or condition. No full narrative, no markdown. Example style:
+"Peak ET₀, no rain — the bed is on the clock."
+"First frost risk — the cauliflowers are exposed."
+
 ### Summary
 2–3 sentences. Write in third person — this is a public blog post, not a
 personal message ("The brassicas are..." not "Your brassicas are..."). Lead

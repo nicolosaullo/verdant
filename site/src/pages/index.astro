@@ -26,6 +26,9 @@ const formatDate = (dateStr: string) => {
           {posts.map(post => (
             <li class="post-item">
               <a href={`${base}/posts/${post.slug}`} class="post-link">{formatDate(post.data.date)}</a>
+              {post.data.description && (
+                <span class="post-summary">{post.data.description.replace(/\*\*/g, '')}</span>
+              )}
             </li>
           ))}
         </ul>

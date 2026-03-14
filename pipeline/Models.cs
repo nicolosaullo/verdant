@@ -9,6 +9,7 @@ public static class GardenConfig
 
 public record GardenInsight(
     DateTimeOffset GeneratedAt,
+    string Teaser,
     string Summary,
     string Observations,
     string Actions,
