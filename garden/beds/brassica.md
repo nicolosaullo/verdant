@@ -38,8 +38,6 @@ channels: 1
 | 2026-02-28 | Fed with Tui Seaweed Plant Tonic (establishment dose) |
 | 2026-03-12 | Mulched bed with Comfrey leaves |
 
-Mulch: none applied yet.
-
 ## Care Notes
 
 - Soil moisture sensor on channel 1 (WH51).
